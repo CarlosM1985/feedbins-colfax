@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0e1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FeedBins">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>FeedBins · Colfax</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0e1117;color:#e8edf5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding-bottom:30px}
+header{background:#161b25;padding:16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid #2a3347}
+header h1{color:#3ecf6e;font-size:18px;font-weight:800}
+.summary{display:flex;gap:10px;padding:14px 16px}
+.summary-card{flex:1;background:#161b25;border-radius:12px;padding:12px 14px;border:1px solid #2a3347}
+.summary-card .lbl{font-size:9px;color:#6b7a99;letter-spacing:0.8px;text-transform:uppercase}
+.summary-card .val{font-size:22px;font-weight:700;margin-top:2px}
+.val.green{color:#3ecf6e}.val.yellow{color:#f5c842}.val.red{color:#f05454}
+.filters{display:flex;gap:8px;padding:0 16px 14px;overflow-x:auto;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.filter-btn{background:#1c2333;border:1px solid #2a3347;color:#6b7a99;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}
+.filter-btn.active{background:#3ecf6e22;border-color:#3ecf6e;color:#3ecf6e}
+.bins{padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.bin-card{background:#1c2333;border:1px solid #2a3347;border-radius:16px;padding:16px}
+.bin-card.critical{border-color:#f0545433;animation:pulse-border 2s infinite}
+@keyframes pulse-border{0%,100%{border-color:#f0545433}50%{border-color:#f05454aa}}
+.bin-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.bin-name{font-size:16px;font-weight:700}
+.bin-diet{font-size:11px;color:#6b7a99;margin-top:2px}
+.bin-badges{display:flex;gap:6px;align-items:center}
+.tandem-badge{background:#4a9eff1a;color:#4a9eff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px}
+.status-dot{width:10px;height:10px;border-radius:50%}
+.dot-green{background:#3ecf6e}.dot-yellow{background:#f5c842}.dot-red{background:#f05454;animation:dot-pulse 1s infinite}
+@keyframes dot-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.bin-visual-row{display:flex;justify-content:center;margin-bottom:14px;position:relative}
+.bin-svg{width:80px;height:110px}
+.bin-pct-label{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.slider-wrap{margin-bottom:14px}
+.slider-labels{display:flex;justify-content:space-between;font-size:10px;color:#6b7a99;margin-bottom:4px}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;border-radius:3px;outline:none;cursor:pointer;background:#2a3347}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;cursor:pointer}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.meta-item.full{grid-column:1/-1}
+.meta-lbl{font-size:10px;color:#6b7a99;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:2px}
+.meta-val{font-size:12px;font-weight:500}
+.save-btn{width:100%;color:#0a1a10;border:none;padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:#3ecf6e;color:#0a1a10;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;transition:transform .3s;z-index:999;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <h1>FeedBins · Colfax</h1>
+  <span id="updated" style="font-size:11px;color:#6b7a99"></span>
+</header>
+<div class="summary">
+  <div class="summary-card"><div class="lbl">BODEGAS</div><div class="val green" id="s-total">22</div></div>
+  <div class="summary-card"><div class="lbl">PROMEDIO</div><div class="val" id="s-avg">--</div></div>
+  <div class="summary-card"><div class="lbl">CRITICAS</div><div class="val red" id="s-crit">0</div></div>
+</div>
+<div class="filters">
+  <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
+  <button class="filter-btn" onclick="setFilter('Gestacion',this)">Gestacion</button>
+  <button class="filter-btn" onclick="setFilter('Breeding',this)">Breeding</button>
+  <button class="filter-btn" onclick="setFilter('Lactacion',this)">Lactacion</button>
+  <button class="filter-btn" onclick="setFilter('critical',this)">Criticos</button>
+</div>
+<div class="bins" id="bins"></div>
+<div class="toast" id="toast"></div>
+<script>
+var BINS_DATA=[
+  {id:1,name:"Bin 1",diet:"Gestacion 4022222",cap:9000,level:75,barn:"G1",lastLevel:80,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:2,name:"Bin 2",diet:"Gestacion 4022222",cap:9000,level:60,barn:"G1",lastLevel:70,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:3,name:"Bin 3",diet:"Gestacion 4022222",cap:9000,level:40,barn:"G2",lastLevel:55,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:4,name:"Bin 4",diet:"Gestacion 4022222",cap:9000,level:18,barn:"G2",lastLevel:30,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:5,name:"Bin 5",diet:"Gestacion 4022222",cap:9000,level:85,barn:"G3",lastLevel:90,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:6,name:"Bin 6",diet:"Gestacion 4022222",cap:9000,level:50,barn:"G3",lastLevel:65,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:7,name:"Bin 7",diet:"Gestacion 4022222",cap:9000,level:30,barn:"G4",lastLevel:45,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:8,name:"Bin 8",diet:"Gestacion 4022222",cap:9000,level:10,barn:"G4",lastLevel:20,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Gestacion"},
+  {id:9,name:"Bin 9",diet:"Gestacion 4022222",cap:6000,level:65,barn:"B3/B4",lastLevel:70,lastDate:"24/04/2026",lastDel:"22/04/2026",group:"Breeding"},
+  {id:10,name:"Bin 10",diet:"Gestacion 4022222",cap:6000,level:55,barn:"B3/B4",lastLevel:60,lastDate:"24/04/2026",lastDel:"22/04/2026",group:"Breeding"},
+  {id:11,name:"Bin 11",diet:"Gestacion 4022222",cap:6000,level:45,barn:"B3/B4",lastLevel:50,lastDate:"24/04/2026",lastDel:"22/04/2026",group:"Breeding"},
+  {id:12,name:"Bin 12",diet:"Gestacion 4022222",cap:6000,level:70,barn:"B1/B2",lastLevel:75,lastDate:"24/04/2026",lastDel:"22/04/2026",group:"Breeding"},
+  {id:13,name:"Bin 13",diet:"Gestacion 4022222",cap:6000,level:25,barn:"B1/B2",lastLevel:35,lastDate:"24/04/2026",lastDel:"22/04/2026",group:"Breeding"},
+  {id:14,name:"Bin 14",diet:"Gestacion 4022222",cap:6000,level:15,barn:"B1/B2",lastLevel:25,lastDate:"24/04/2026",lastDel:"22/04/2026",group:"Breeding"},
+  {id:15,name:"Bin 15",diet:"Lactacion 4022252",cap:9000,level:80,barn:"F1",lastLevel:85,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion",tandem:"Pulmotil"},
+  {id:16,name:"Bin 16",diet:"Lactacion 4022252",cap:9000,level:70,barn:"F1",lastLevel:75,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion"},
+  {id:17,name:"Bin 17",diet:"Lactacion 4022252",cap:9000,level:60,barn:"F2",lastLevel:65,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion"},
+  {id:18,name:"Bin 18",diet:"Lactacion 4022252",cap:9000,level:20,barn:"F2",lastLevel:30,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion"},
+  {id:19,name:"Bin 19",diet:"Lactacion 4022252",cap:9000,level:90,barn:"F3",lastLevel:95,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion"},
+  {id:20,name:"Bin 20",diet:"Lactacion 4022252",cap:9000,level:35,barn:"F3",lastLevel:50,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion"},
+  {id:21,name:"Bin 21",diet:"Lactacion 4022252",cap:9000,level:55,barn:"F4",lastLevel:60,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion"},
+  {id:22,name:"Bin 22",diet:"Lactacion 4022252",cap:9000,level:12,barn:"F4",lastLevel:20,lastDate:"25/04/2026",lastDel:"23/04/2026",group:"Lactacion"}
+];
+var bins=JSON.parse(localStorage.getItem('feedbins')||'null')||BINS_DATA.map(function(b){return Object.assign({},b)});
+var currentFilter='all';
+function color(p){return p>=35?'#3ecf6e':p>=20?'#f5c842':'#f05454'}
+function colorClass(p){return p>=35?'green':p>=20?'yellow':'red'}
+function dotClass(p){return p>=35?'dot-green':p>=20?'dot-yellow':'dot-red'}
+function binSVG(p,c){
+  var fh=Math.round(57*p/100),fy=71-fh;
+  return '<svg class="bin-svg" viewBox="0 0 80 110"><polygon points="40,2 68,14 12,14" fill="#2a3347"/><rect x="12" y="14" width="56" height="57" rx="3" fill="#161b25"/><clipPath id="cp'+p+'"><rect x="12" y="14" width="56" height="57"/></clipPath><rect x="12" y="'+fy+'" width="56" height="'+fh+'" fill="'+c+'" opacity="0.85" clip-path="url(#cp'+p+')" /><rect x="12" y="14" width="56" height="57" rx="3" fill="none" stroke="#2a3347" stroke-width="2"/><polygon points="12,71 40,88 68,71" fill="#161b25" stroke="#2a3347" stroke-width="2"/><line x1="26" y1="86" x2="21" y2="104" stroke="#2a3347" stroke-width="3"/><line x1="54" y1="86" x2="59" y2="104" stroke="#2a3347" stroke-width="3"/></svg>';
+}
+function fmt(n){return n.toString().replace(/B(?=(d{3})+(?!d))/g,',')}
+function renderBins(){
+  var container=document.getElementById('bins');
+  var filtered=bins.filter(function(b){
+    if(currentFilter==='all')return true;
+    if(currentFilter==='critical')return b.level<20;
+    return b.group===currentFilter;
+  });
+  container.innerHTML=filtered.map(function(b){
+    var col=color(b.level),inv=Math.round(b.cap*b.level/100);
+    return '<div class="bin-card'+(b.level<20?' critical':'')+'" id="card'+b.id+'">'+
+      '<div class="bin-header"><div><div class="bin-name">'+b.name+'</div><div class="bin-diet">'+b.diet+'</div></div>'+
+      '<div class="bin-badges">'+(b.tandem?'<span class="tandem-badge">PULMOTIL</span>':'')+
+      '<div class="status-dot '+dotClass(b.level)+'"></div></div></div>'+
+      '<div class="bin-visual-row">'+binSVG(b.level,col)+'<div class="bin-pct-label">'+b.level+'%</div></div>'+
+      '<div class="slider-wrap"><div class="slider-labels"><span>0%</span><span>20%</span><span>100%</span></div>'+
+      '<input type="range" min="0" max="100" value="'+b.level+'" id="sl'+b.id+'" oninput="updateLevel('+b.id+',+this.value)"></div>'+
+      '<div class="meta-grid">'+
+      '<div class="meta-item"><div class="meta-lbl">CAPACIDAD</div><div class="meta-val">'+fmt(b.cap)+' kg</div></div>'+
+      '<div class="meta-item"><div class="meta-lbl">INVENTARIO</div><div class="meta-val" id="inv'+b.id+'">'+fmt(inv)+' kg</div></div>'+
+      '<div class="meta-item"><div class="meta-lbl">BODEGA</div><div class="meta-val">'+b.barn+'</div></div>'+
+      '<div class="meta-item"><div class="meta-lbl">ULT. ENTREGA</div><div class="meta-val">'+b.lastDel+'</div></div>'+
+      '<div class="meta-item full"><div class="meta-lbl">NIVEL ANTERIOR - '+b.lastDate+'</div><div class="meta-val">'+b.lastLevel+'%</div></div>'+
+      '</div><button class="save-btn" onclick="saveLevel('+b.id+')" style="background:'+col+'">GUARDAR NIVEL</button></div>';
+  }).join('');
+  updateSliders();updateSummary();
+}
+function updateSliders(){
+  bins.forEach(function(b){
+    var sl=document.getElementById('sl'+b.id);
+    if(!sl)return;
+    var c=color(b.level),p=b.level+'%';
+    sl.style.background='linear-gradient(to right,'+c+' 0%,'+c+' '+p+',#2a3347 '+p+',#2a3347 100%)';
+    sl.style.setProperty('--tc',c);
+  });
+}
+function updateLevel(id,val){
+  var b=bins.find(function(x){return x.id===id});
+  if(!b)return;
+  b.level=val;
+  var col=color(val),inv=Math.round(b.cap*val/100);
+  var card=document.getElementById('card'+id);
+  if(card){
+    var vr=card.querySelector('.bin-visual-row');
+    vr.innerHTML=binSVG(val,col)+'<div class="bin-pct-label">'+val+'%</div>';
+    var invEl=document.getElementById('inv'+id);
+    if(invEl)invEl.textContent=fmt(inv)+' kg';
+    card.querySelector('.save-btn').style.background=col;
+    var dot=card.querySelector('.status-dot');
+    dot.className='status-dot '+dotClass(val);
+    if(val<20)card.classList.add('critical');else card.classList.remove('critical');
+    var sl=document.getElementById('sl'+id);
+    if(sl)sl.style.background='linear-gradient(to right,'+col+' 0%,'+col+' '+val+'%,#2a3347 '+val+'%,#2a3347 100%)';
+  }
+  updateSummary();
+}
+function saveLevel(id){
+  var b=bins.find(function(x){return x.id===id});
+  if(!b)return;
+  var d=new Date(),dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0');
+  b.lastLevel=b.level;b.lastDate=dd+'/'+mm+'/'+d.getFullYear();
+  localStorage.setItem('feedbins',JSON.stringify(bins));
+  showToast('Guardado: '+b.name+' - '+b.level+'%');
+}
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2500);
+}
+function updateSummary(){
+  var avg=Math.round(bins.reduce(function(s,b){return s+b.level},0)/bins.length);
+  var crit=bins.filter(function(b){return b.level<20}).length;
+  var el=document.getElementById('s-avg');
+  el.textContent=avg+'%';el.className='val '+colorClass(avg);
+  document.getElementById('s-crit').textContent=crit;
+  var n=new Date();
+  document.getElementById('updated').textContent='Act. '+n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');
+}
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');renderBins();
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js')});
+}
+renderBins();
+</script>
+</body>
+</html>
