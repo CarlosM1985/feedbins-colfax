@@ -469,9 +469,21 @@ function loadUsers(){
   try{ const s=localStorage.getItem('fb-v4-users'); if(s) return JSON.parse(s); }catch(e){}
   return defaultUsers.map(u=>({...u}));
 }
-function saveUsers(){ try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){} }
+function saveUsers(){
+  try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+  if(typeof db!=='undefined') db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users save error',e));
+}
 
 let users = loadUsers();
+// Load users from Firestore before login so all devices share the same user list
+db.collection('users').doc('list').get().then(doc=>{
+  if(doc.exists && doc.data().users && doc.data().users.length){
+    users = doc.data().users;
+    try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+  } else {
+    db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users init error',e));
+  }
+}).catch(e=>console.warn('FB users load error',e));
 let currentUser = null; // {id, name, username, role, color}
 let sessionExpiry = 0;
 
@@ -552,6 +564,15 @@ function initFirestoreSync(){
       if(currentUser){renderBins();renderFilters();updateSummary(getVisible());}
     }
   },err=>console.warn('FB listener error',err));
+
+  // Real-time users sync — admin changes propagate to all devices
+  db.collection('users').doc('list').onSnapshot(doc=>{
+    if(doc.exists && doc.data().users && doc.data().users.length){
+      users = doc.data().users;
+      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+      if(document.getElementById('users-list')) renderUsersList();
+    }
+  },err=>console.warn('FB users listener error',err));
 
   // Load bins from Firestore on first login
   db.collection('bins').get().then(snapshot=>{
