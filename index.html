@@ -628,6 +628,7 @@ function updateSessionBar(){
   const bar = document.getElementById('session-bar');
   bar.className = 'session-bar' + (remaining < 600000 ? ' warn' : '');
 }
+
 // ════════════════════════════════════════════
 //  BIN DATA
 // ════════════════════════════════════════════
@@ -729,7 +730,63 @@ function renderFilters(){
     t.className='ftag'+(f===activeFilter?' on':'');
     const crit=allBins.filter(b=>b.level<20).length;
     const closed=allBins.filter(b=>!b.isOpen).length;
-    t.textC
+    t.textContent=f==='Críticos'?`Críticos (${crit})`:f==='Cerrados'?`Cerrados (${closed})`:f;
+    t.onclick=()=>{activeFilter=f;expanded=null;renderFilters();renderBins()};
+    fr.appendChild(t);
+  });
+}
+
+// ── SLIDE ──
+function onSlide(binId,val){
+  if(!can('canSave')) return;
+  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
+  bin.level=parseInt(val);
+  const color=col(bin.level);
+  const esvg=document.getElementById('esvg-'+binId);
+  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
+  const ep=document.getElementById('epb-'+binId);if(ep){ep.textContent=bin.level+'%';ep.className='exp-pct-big '+valCls(bin.level)}
+  const inv=(bin.cap*bin.level/100).toFixed(2);
+  const et=document.getElementById('eton-'+binId);if(et) et.textContent=inv+' ton de '+bin.cap;
+  const sl=document.getElementById('vsl-'+binId);if(sl) sl.style.accentColor=color;
+  const card=document.querySelector(`[data-binid="${binId}"]`);
+  if(card){
+    const mp=card.querySelector('.mini-pct');const pb=card.querySelector('.bin-pct-big');
+    const dot=card.querySelector('.sdot');const msvg=card.querySelector('.bin-mini-svg');const bton=card.querySelector('.bin-ton');
+    if(mp) mp.textContent=bin.level+'%';
+    if(pb){pb.textContent=bin.level+'%';pb.className='bin-pct-big '+valCls(bin.level)}
+    if(dot) dot.className='sdot '+dotCls(bin.level);
+    if(msvg) msvg.innerHTML=makeSVG(bin.level,color,46,66)+`<div class="mini-pct">${bin.level}%</div>`;
+    if(bton) bton.textContent=(bin.cap*bin.level/100).toFixed(1)+'t';
+  }
+  updateSummary(getVisible());
+}
+
+// ── TOGGLE STATUS ──
+function toggleStatus(binId, isOpen){
+  if(!can('canToggle')){ showToast('Sin permiso para cambiar estado','err'); return; }
+  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
+  bin.isOpen=isOpen;saveSingleBin(bin);
+  const card=document.querySelector(`[data-binid="${binId}"]`);
+  if(card){
+    const led=card.querySelector('.status-led');
+    if(led) led.className='status-led '+(isOpen?'open-led':'closed-led');
+    card.className=card.className.replace(' closed-bin','')+(isOpen?'':' closed-bin');
+  }
+  const oBtn=document.getElementById('topen-'+binId);
+  const cBtn=document.getElementById('tclose-'+binId);
+  if(oBtn) oBtn.className='t-opt open-opt'+(isOpen?' active':'');
+  if(cBtn) cBtn.className='t-opt close-opt'+(!isOpen?' active':'');
+  updateSummary(getVisible());renderFilters();
+  showToast(bin.name+' — '+(isOpen?'🟢 ABIERTO':'🔴 CERRADO'));
+}
+
+// ── SAVE LEVEL ──
+function saveLevel(binId){
+  if(!can('canSave')){ showToast('Sin permiso para guardar lecturas','err'); return; }
+  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
+  const notesEl=document.getElementById('notes-'+binId);
+  if(notesEl) bin.notes=notesEl.value.trim();
+  const prev=bin.prevLevel!=null?bin.prevLevel:bin.level;
   bin.prevLevel=bin.level;bin.ts=nowTs();bin.savedBy=currentUser.name;
   history.unshift({ts:bin.ts,binId:bin.id,binName:bin.name,barn:bin.barn,group:bin.group,
     diet:bin.diet,cap:bin.cap,level:bin.level,prevLevel:prev,notes:bin.notes,
@@ -738,12 +795,14 @@ function renderFilters(){
   saveSingleBin(bin);saveHistData(history[0]);
   showToast('✓ '+bin.name+' — '+bin.level+'% guardado');
   renderFilters();
-  const card=document.querySelector('[data-binid="'+binId+'"]');
+  const card=document.querySelector(`[data-binid="${binId}"]`);
   if(card){
     const tsEl=card.querySelector('.bin-ts');if(tsEl) tsEl.textContent='⏱ '+fmtTs(bin.ts);
     const whoEl=card.querySelector('.bin-who');if(whoEl) whoEl.textContent='por '+currentUser.name;
   }
-}// ── BUILD CARD HTML ──
+}
+
+// ── BUILD CARD HTML ──
 function buildCardHTML(bin){
   const color=col(bin.level);const inv=(bin.cap*bin.level/100).toFixed(1);
   return `<div class="bin-row">
@@ -753,8 +812,8 @@ function buildCardHTML(bin){
       <div class="bin-name">${bin.name}<span class="barn-tag">${bin.barn}</span></div>
       <div class="bin-diet">${bin.diet}</div>
       <div class="bin-ts">${bin.ts?'⏱ '+fmtTs(bin.ts):'Sin lecturas'}</div>
-      ${bin.savedBy?`<div class="bin-who">por ${bin.savedBy}</div>`:''} 
-      ${bin.notes?`<div class="badges"><span class="nbadge">${bin.notes}</span></div>`:''} 
+      ${bin.savedBy?`<div class="bin-who">por ${bin.savedBy}</div>`:''}
+      ${bin.notes?`<div class="badges"><span class="nbadge">${bin.notes}</span></div>`:''}
     </div>
     <div class="bin-right">
       <div class="bin-pct-big ${valCls(bin.level)}">${bin.level}%</div>
@@ -768,7 +827,7 @@ function buildExpandHTML(bin){
   const color=col(bin.level);const inv=(bin.cap*bin.level/100).toFixed(2);
   const ro=!can('canSave');
   return `<div class="expand-body">
-    ${ro?`<div class="readonly-banner">👁 Modo solo lectura — ${currentUser.role}</div>`:''} 
+    ${ro?`<div class="readonly-banner">👁 Modo solo lectura — ${currentUser.role}</div>`:''}
     <div class="level-control">
       <div class="v-slider-col">
         <div class="v-slider-lbl">100%</div>
@@ -807,7 +866,7 @@ function buildExpandHTML(bin){
       <div class="notes-lbl">Notas</div>
       <textarea class="notes-input" id="notes-${bin.id}" placeholder="Observaciones…" ${ro?'disabled':''}>${bin.notes||''}</textarea>
     </div>
-    ${!ro?`<button class="save-btn" onclick="event.stopPropagation();saveLevel(${bin.id})">GUARDAR LECTURA</button>`:''} 
+    ${!ro?`<button class="save-btn" onclick="event.stopPropagation();saveLevel(${bin.id})">GUARDAR LECTURA</button>`:''}
   </div>`;
 }
 
@@ -963,7 +1022,7 @@ function renderResumen(){
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:2px">
           <span style="font-family:var(--mono);font-size:7px;color:var(--yellow)">libre: ${space}t</span>
-          ${bin.notes?`<span style="font-family:var(--mono);font-size:7px;color:var(--yellow)">${bin.notes}</span>`:''} 
+          ${bin.notes?`<span style="font-family:var(--mono);font-size:7px;color:var(--yellow)">${bin.notes}</span>`:''}
         </div>
       </div>
 
@@ -971,7 +1030,7 @@ function renderResumen(){
       <div style="text-align:right;flex-shrink:0;min-width:58px">
         ${bin.ts
           ?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted2)">⏱ ${fmtTs(bin.ts)}</div>
-             ${bin.savedBy?`<div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${bin.savedBy}</div>`:''}`  
+             ${bin.savedBy?`<div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${bin.savedBy}</div>`:''}` 
           :`<div style="font-family:var(--mono);font-size:8px;color:var(--muted)">Sin lecturas</div>`}
         <div style="font-family:var(--mono);font-size:7px;color:${bin.isOpen?'var(--green)':'var(--red)'};margin-top:2px">${bin.isOpen?'Abierto':'Cerrado'}</div>
       </div>
@@ -1005,9 +1064,8 @@ function exportResumenCSV(){
     const space=Math.max(0,b.cap-b.cap*b.level/100).toFixed(2);
     rows.push([b.name,b.barn,b.group,b.diet,b.cap,b.level,inv,space,b.isOpen?'Abierto':'Cerrado',b.notes||'',b.ts?fmtTs(b.ts):'—',b.savedBy||'—']);
   });
-  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('
-');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
   a.download='feedbins-resumen-'+new Date().toISOString().slice(0,10)+'.csv';
@@ -1054,8 +1112,7 @@ function exportCSV(){
     const inv=(h.cap*h.level/100).toFixed(2);
     rows.push([h.binName,h.barn,h.group,d.toLocaleDateString('es-MX'),d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),h.level,delta,inv,h.notes||'',h.isOpen!==false?'Abierto':'Cerrado',h.savedBy||'']);
   });
-  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('
-');
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
@@ -1146,4 +1203,386 @@ function renderComparativa(){
     const chips=document.createElement('div');
     chips.style.cssText='display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px';
     if(overfill>0) chips.innerHTML+=`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">⚠ ${overfill} sobrellenado${overfill>1?'s':''}</span>`;
-    if(lowAfter>0) chips.innerHTML+=`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">↑ ${lont-size:7px;color:var(--muted);letter-spacing:.5px">ESPACIO</div>\n      <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--yellow)">${totalSpace.toFixed(1)}t</div>\n    </div>\n    <div style="background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 5px;text-align:center">\n      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.5px">ORDENADO</div>\n      <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue)">${totalOrder.toFixed(1)}t</div>\n    </div>`;\n  scroll.appendChild(statBar);\n\n  // Alert chips\n  if(overfill>0||lowAfter>0||noOrder>0){\n    const chips=document.createElement('div');\n    chips.style.cssText='display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px';\n    if(overfill>0) chips.innerHTML+=`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">⚠ ${overfill} sobrellenado${overfill>1?'s':''}</span>`;\n    if(lowAfter>0) chips.innerHTML+=`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">↑ ${lowAfter} &lt;80% post-entrega</span>`;\n    if(noOrder>0)  chips.innerHTML+=`<span style="background:rgba(78,95,122,0.15);border:0.5px solid var(--border);color:var(--muted2);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">— ${noOrder} sin pedir</span>`;\n    scroll.appendChild(chips);\n  }\n\n  // Per-bin rows via TANDEM_DEFS\n  const binById=Object.fromEntries(sorted.map(b=>[b.id,b]));\n  const innerScroll=document.createElement('div');\n  innerScroll.style.cssText='flex:1;overflow-y:auto;padding:6px 10px 16px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch';\n  innerScroll.style.setProperty('-webkit-overflow-scrolling','touch');\n\n  let lastGrp='';\n  TANDEM_DEFS.forEach(def=>{\n    const defBins=def.ids.map(id=>binById[id]).filter(Boolean);\n    if(!defBins.length) return;\n\n    if(def.group!==lastGrp){\n      lastGrp=def.group;\n      const grpInv=sorted.filter(b=>b.group===def.group).reduce((s,b)=>s+(b.cap*b.level/100),0);\n      const grpCap=sorted.filter(b=>b.group===def.group).reduce((s,b)=>s+b.cap,0);\n      const grpOrd=sorted.filter(b=>b.group===def.group).reduce((s,b)=>s+(orderTons[b.id]||0),0);\n      const grpPct=Math.round(grpInv/grpCap*100);\n      const gh=document.createElement('div');\n      gh.style.cssText='display:flex;justify-content:space-between;padding:10px 2px 4px;border-bottom:0.5px solid var(--border);margin-bottom:4px'style="display:flex;gap:10px">\n          <span style="font-family:var(--mono);font-size:9px;color:${col(grpPct)};font-weight:600">${grpPct}% prom.</span>\n          ${grpOrd>0?`<span style="font-family:var(--mono);font-size:9px;color:var(--blue)">${grpOrd.toFixed(1)}t pedidas</span>`:''}\n        </span>`;\n      innerScroll.appendChild(gh);\n    }\n\n    // Wrap in tandem box if multiple\n    const wrapper=document.createElement('div');\n    if(defBins.length>1){\n      wrapper.style.cssText=`border:1px solid rgba(41,128,185,0.4);border-radius:10px;overflow:hidden;margin-bottom:0`;\n      const tlabel=document.createElement('div');\n      tlabel.style.cssText='background:rgba(41,128,185,0.07);border-bottom:0.5px solid rgba(41,128,185,0.2);padding:5px 12px;font-family:var(--mono);font-size:8px;color:var(--blue);display:flex;gap:5px;align-items:center';\n      tlabel.innerHTML=`<span>⇄</span> Bodega ${def.barn}`;\n      wrapper.appendChild(tlabel);\n    }\n\n    defBins.forEach((bin,i)=>{\n      const inv=bin.cap*bin.level/100;\n      const space=Math.max(0,bin.cap-inv);\n      const order=orderTons[bin.id]||0;\n      const afterPct=Math.min(100,Math.round((inv+order)/bin.cap*100));\n      const delta=order-space;\n      const isOverfill=delta>0.1&&order>0;\n      const isLow=afterPct<80&&order>0;\n      const hasOrder=order>0;\n\n      const row=document.createElement('div');\n      row.style.cssText=`padding:11px 12px;background:var(--card);${defBins.length>1&&i<defBins.length-1?'border-bottom:0.5px solid var(--border)':''}`;\n\n      // Mini progress bar helper\n      const bar=(pct,color)=>`<div style="width:100%;height:5px;background:var(--s2);border-radius:3px;margin-top:3px;overflow:hidden">\n        <div style="width:${pct}%;height:100%;background:${color};opacity:0.85;border-radius:3px"></div>\n        <div style="position:absolute;left:20%;top:0;width:1px;height:100%;background:rgba(192,57,43,0.4)"></div>\n      </div>`;\n\n      row.innerHTML=`\n        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">\n          <div>\n            <div style="display:flex;align-items:center;gap:5px">\n              <span style="font-family:var(--sans);font-size:12px;font-weight:700;color:var(--text)">${bin.name}</span>\n              <span style="font-family:var(--mono);font-size:8px;color:var(--muted2);background:var(--s2);border:1px solid var(--border2);border-radius:2px;padding:0 4px">${bin.barn}</span>\n              ${bin.notes?`<span style="font-family:var(--mono);font-size:7px;color:var(--yellow);background:rgba(230,126,34,0.1);border:0.5px solid rgba(230,126,34,0.3);border-radius:2px;padding:0 4px">${bin.notes}</span>`:''}\n            </div>\n            <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${bin.diet}</div>\n          </div>\n          <div style="text-align:right">\n            <div style="font-family:var(--mono);font-size:20px;font-weight:600;color:${col(bin.level)};line-height:1">${bin.level}%</div>\n            <div style="font-family:var(--mono);font-size:8px;color:var(--muted)">ahora</div>\n          </div>\n        </div>\n\n        <!-- Current level bar -->\n        <div style="position:relative">${bar(bin.level,col(bin.level))}</div>\n        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--muted);margin-top:1px margin-bottom:6px">\n          <span>Actual</span><span>${bin.level}%</span>\n        </div>\n\n        <!-- Data grid -->\n        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px 8px;margin-top:8px">\n          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">CAPACIDAD</div>\n               <div style="font-family:var(--mono);font-size:10px;color:var(--text);font-weight:600">${bin.cap} t</div></div>\n          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">INVENTARIO</div>\n               <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${col(bin.level)}">${inv.toFixed(2)} t</div></div>\n          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">ESPACIO LIBRE</div>\n               <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--yellow)">${space.toFixed(2)} t</div></div>\n        </div>\n\n        ${hasOrder?`\n        <div style="border-top:0.5px solid var(--border);margin-top:8px;padding-top:8px">\n          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px 8px;margin-bottom:6px">\n            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">ORDEN</div>\n                 <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--blue)">${order.toFixed(1)} t</div></div>\n            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">POST-ENTREGA</div>\n                 <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${col(afterPct)}">${afterPct}%</div></div>\n            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${isOverfill?'EXCESO':'DIFERENCIA'}</div>\n                 <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${isOverfill?'var(--red)':delta<-0.1?'var(--yellow)':'var(--green)'}">${delta>0?'+':''}${delta.toFixed(2)} t</div></div>\n          </div>\n          <div style="position:relative">${bar(afterPct,col(afterPct))}</div>\n          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--muted);margin-top:1px">\n            <span>Post-entrega</span><span>${afterPct}%</span>\n          </div>\n          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">\n            ${isOverfill?`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">⚠ Sobrellenado +${delta.toFixed(2)}t</span>`:''}\n            ${isLow?`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">↑ Quedará al ${afterPct}%</span>`:''}\n            ${!isOverfill&&!isLow?`<span style="background:rgba(39,174,96,0.12);border:0.5px solid rgba(39,174,96,0.4);color:var(--green);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">✓ OK post-entrega</span>`:''}\n          </div>\n        </div>`:`\n        <div style="background:rgba(78,95,122,0.07);border:0.5px solid rgba(78,95,122,0.2);border-radius:5px;padding:7px 10px;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--muted)">\n          — Sin pedido registrado para este bin\n        </div>`}`;\n\n      wrapper.appendChild(row);\n    });\n\n    innerScroll.appendChild(wrapper);\n  });\n\n  // ── Grand total footer ──\n  const footer=document.createElement('div');\n  footer.style.cssText='background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:7px;margin-top:4px';\n  footer.innerHTML=`\n    <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES — 22 BINS</div>\n    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px">\n      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">CAPACIDAD TOTAL</div>\n           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)">${totalCap.toFixed(0)} t</div></div>\n      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">INVENTARIO TOTAL</div>\n           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green)">${totalInv.toFixed(2)} t</div></div>\n      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">ESPACIO LIBRE</div>\n           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--yellow)">${totalSpace.toFixed(2)} t</div></div>\n      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">TOTAL ORDENADO</div>\n           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue)">${totalOrder.toFixed(2)} t</div></div>\n    </div>\n    <div style="border-top:0.5px solid rgba(39,174,96,0.3);padding-top:7px;display:flex;justify-content:space-between;align-items:center">\n      <span style="font-family:var(--mono);font-size:9px;color:var(--muted2)">NIVEL POST-ENTREGA ESTIMADO</span>\n      <span style="font-family:var(--mono);font-size:20px;font-weight:600;color:${col(overallAfter)}">${overallAfter}%</span>\n    </div>\n    <div style="position:relative">\n      <div style="width:100%;height:6px;background:var(--s2);border-radius:3px;overflow:hidden">\n        <div style="width:${overallAfter}%;height:100%;background:${col(overallAfter)};opacity:0.85;border-radius:3px"></div>\n      </div>\n    </div>\n    <div style="font-family:var(--mono);font-size:8px;color:var(--muted);text-align:right">Promedio global post-entrega</div>`;\n  innerScroll.appendChild(footer);\n  scroll.appendChild(innerScroll);\n}\n\n// ── TABS ──\nfunction switchTab(tab){\n  currentTab=tab;\n  ['bins','lecturas','orden','comparativa','admin'].forEach(t=>{\n    const v=document.getElementById('view-'+t);if(v) v.style.display=t===tab?'flex':'none';\n    const tb=document.getElementById('tab-'+t);if(tb) tb.className=tb.className.replace(' on','')+(t===tab?' on':'');\n  });\n  if(tab==='lecturas'){\n    renderResumen();   // siempre mostrar resumen primero\n    renderLecturas();  // precarga historial en background\n  }\n  if(tab==='orden')       renderOrder();\n  if(tab==='comparativa') renderComparativa();\n  if(tab==='admin')       renderAdmin();\n}\nfunction updateOrderSummary(){\n  const box=document.getElementById('order-summary');\n  const entries=allBins.filter(b=>(orderTons[b.id]||0)>0);\n  if(!entries.length){box.style.display='none';return}\n  box.style.display='flex';\n  const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);\n  let html=`<div class="order-sum-title">Resumen de Orden — ${new Date().toLocaleDateString('es-MX')}</div>`;\n  entries.forEach(b=>{ html+=`<div class="order-sum-row"><span>${b.name} (${b.barn})</span><span>${orderTons[b.id]} t</span></div>`; });\n  html+=`<div class="order-sum-total"><span>TOTAL</span><span>${total.toFixed(1)} toneladas</span></div>`;\n  box.innerHTML=html;\n}\nfunction autoFillOrder(){\n  if(!can('canOrder')){showToast('Sin permiso','err');return}\n  allBins.forEach(bin=>{\n    const needed=Math.max(0,bin.cap-(bin.cap*bin.level/100));\n    orderTons[bin.id]=Math.round(needed*2)/2;\n    const inp=document.getElementById('ord-'+bin.id);if(inp) inp.value=orderTons[bin.id]||'';\n  });\n  updateOrderSummary();showToast('✓ Auto-llenado calculado');\n}\nfunction clearOrder(){\n  if(!can('canOrder')){showToast('Sin permiso','err');return}\n  orderTons={};\n  allBins.forEach(b=>{const i=document.getElementById('ord-'+b.id);if(i)i.value=''});\n  updateOrderSummary();saveOrderData();showToast('Orden limpiada');\n}\nfunction saveOrder(){\n  if(!can('canOrder')){showToast('Sin permiso','err');return}\n  saveOrderData();\n  const entries=allBins.filter(b=>(orderTons[b.id]||0)>0);\n  if(!entries.length){showToast('Ingresa al menos una cantidad');return}\n  const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);\n  showToast(`✓ Orden guardada — ${total.toFixed(1)} ton`);\n}\n\n// ── ADMIN PANEL ──\nfunction renderAdmin(){\n  if(!can('canAdmin')){return}\n  const screen=document.getElementById('admin-screen');\n  screen.innerHTML=`\n    <div style="display:flex;justify-content:space-between;align-items:center">\n      <div class="admin-section-title">Gestión de Usuarios</div>\n      <button class="tbl-btn primary" onclick="openAddUserModal()">+ Agregar</button>\n    </div>\n    <div id="users-list"></div>\n    <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.6">\n      <div style="color:var(--text);font-size:10px;margin-bottom:6px;font-weight:600">Roles y Permisos</div>\n      <div><span style="color:#c39bd3">▪ ADMIN</span> — Todo: bodegas, lecturas, orden, usuarios</div>\n      <div><span style="color:#82e0aa">▪ OPERADOR</span> — Puede ver y guardar lecturas, cambiar estado abierto/cerrado</div>\n      <div><span style="color:#7fb3d3">▪ VISITANTE</span> — Solo lectura, no puede guardar ni modificar</div>\n      <div style="margin-top:8px;color:var(--yellow)">⏱ Sesión: 8 horas por turno</div>\n    </div>`;\n  renderUsersList();\n}\n\nfunction renderUsersList(){\n  const container=document.getElementById('users-list');\n  if(!container) return;\n  container.innerHTML='';\n  users.forEach(u=>{\n    const card=document.createElement('div');card.className='user-card';\n    const isSelf=u.id===currentUser.id;\n    card.innerHTML=`\n      <div class="user-card-avatar" style="background:${u.color}">${initials(u.name)}</div>\n      <div class="user-card-info">\n        <div class="user-card-name">${u.name} ${isSelf?'<span style="font-size:9px;color:var(--muted)">(tú)</span>':''}</div>\n        <div class="user-card-user">@${u.username} · <span class="user-role-badge role-${u.role}" style="font-size:8px">${u.role.toUpperCase()}</span></div>\n        <div style="font-family:var(--mono);font-size:9px;color:${u.active?'var(--green)':'var(--red)'};margin-top:2px">${u.active?'● Activo':'● Inactivo'}</div>\n      </div>\n      <div class="user-card-actions">\n        <button class="uc-btn" onclick="openEditUserModal('${u.id}')">Editar</button>\n        ${!isSelf?`<button class="uc-btn danger" onclick="deleteUser('${u.id}')">Eliminar</button>`:''}\n      </div>`;\n    container.appendChild(card);\n  });\n}\n\nfunction openAddUserModal(){\n  openUserModal(null);\n}\nfunction openEditUserModal(uid){\n  openUserModal(uid);\n}\nfunction openUserModal(uid){\n  const u = uid ? users.find(u=>u.id===uid) : null;\n  const colors=['#8e44ad','#27ae60','#2980b9','#e67e22','#c0392b','#16a085'];\n  const modal=document.getElementById('modal');\n  const box=document.getElementById('modal-box');\n  box.innerHTML=`\n    <div class="modal-title">${u?'Editar Usuario':'Nuevo Usuario'}</div>\n    <div class="modal-field"><div class="modal-lbl">Nombre completo</div>\n      <input class="modal-input" id="m-name" value="${u?u.name:''}" placeholder="Ej: Juan García"></div>\n    <div class="modal-field"><div class="modal-lbl">Usuario (login)</div>\n      <input class="modal-input" id="m-user" value="${u?u.username:''}" placeholder="juangarcia" autocapitalize="none"></div>\n    <div class="modal-field"><div class="modal-lbl">Contraseña ${u?'(dejar vacío para no cambiar)':''}</div>\n      <input class="modal-input" id="m-pass" type="password" placeholder="Mínimo 6 caracteres"></div>\n    <div class="modal-field"><div class="modal-lbl">Rol</div>\n      <select class="modal-input" id="m-role">\n        <option value="operador" ${u?.role==='operador'?'selected':''}>Operador</option>\n        <option value="visitante" ${u?.role==='visitante'?'selected':''}>Visitante</option>\n        <option value="admin" ${u?.role==='admin'?'selected':''}>Administrador</option>\n      </select></div>\n    <div class="modal-field"><div class="modal-lbl">Color</div>\n      <div style="display:flex;gap:8px;flex-wrap:wrap" id="m-colors">\n        ${colors.map(c=>`<div onclick="selectColor('${c}')" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(u?.color===c)?'white':'transparent'};transition:border 0.1s" id="mc-${c.replace('#','')}"></div>`).join('')}\n      </div></div>\n    ${u?`<div class="modal-field"><div class="modal-lbl">Estado</div>\n      <select class="modal-input" id="m-active">\n        <option value="true" ${u.active?'selected':''}>Activo</option>\n        <option value="false" ${!u.active?'selected':''}>Inactivo</option>\n      </select></div>`:''}\n    <div class="modal-error" id="m-err"></div>\n    <div class="modal-actions">\n      <button class="modal-btn cancel" onclick="closeModal()">Cancelar</button>\n      <button class="modal-btn confirm" onclick="saveUserModal('${uid||''}')">Guardar</button>\n    </div>`;\n  window._selectedColor = u?.color || colors[0];\n  modal.classList.add('show');\n}\n\nfunction selectColor(c){\n  window._selectedColor=c;\n  document.querySelectorAll('[id^="mc-"]').forEach(el=>{el.style.borderColor='transparent'});\n  const el=document.getElementById('mc-'+c.replace('#',''));\n  if(el) el.style.borderColor='white';\n}\n\nfunction saveUserModal(uid){\n  const name=document.getElementById('m-name').value.trim();\n  const username=document.getElementById('m-user').value.trim().toLowerCase();\n  const pass=document.getElementById('m-pass').value;\n  const role=document.getElementById('m-role').value;\n  const errEl=document.getElementById('m-err');\n  if(!name||!username){errEl.textContent='Nombre y usuario son requeridos';errEl.classList.add('show');return}\n  if(!uid&&!pass){errEl.textContent='La contraseña es requerida para nuevos usuarios';errEl.classList.add('show');return}\n  if(pass&&pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';errEl.classList.add('show');return}\n  const dup=users.find(u=>u.username===username&&u.id!==uid);\n  if(dup){errEl.textContent='Ese usuario ya existe';errEl.classList.add('show');return}\n  if(uid){\n    const u=users.find(u=>u.id===uid);\n    if(u){\n      u.name=name;u.username=username;u.role=role;u.color=window._selectedColor;\n      if(pass) u.password=pass;\n      const activeEl=document.getElementById('m-active');\n      if(activeEl) u.active=activeEl.value==='true';\n    }\n  } else {\n    users.push({id:'u'+Date.now(),name,username,password:pass,role,color:window._selectedColor,active:true});\n  }\n  saveUsers();closeModal();renderUsersList();\n  showToast(uid?'Usuario actualizado':'✓ Usuario creado');\n}\n\nfunction deleteUser(uid){\n  if(uid===currentUser.id){showToast('No puedes eliminarte a ti mismo','err');return}\n  const u=users.find(u=>u.id===uid);\n  if(!confirm(`¿Eliminar usuario "${u?.name}"?`))return;\n  users=users.filter(u=>u.id!==uid);saveUsers();renderUsersList();\n  showToast('Usuario eliminado');\n}\n\nfunction closeModal(){\n  document.getElementById('modal').classList.remove('show');\n}\n\n// ── TOAST ──\nfunction showToast(msg, type=''){\n  const t=document.getElementById('toast');\n  t.textContent=msg;\n  t.className='toast show'+(type==='err'?' error-toast':'');\n  setTimeout(()=>t.classList.remove('show'),2500);\n}\n\n// ── CLOCK ──\nfunction updateClock(){\n  const now=new Date();\n  const te=document.getElementById('live-time');const de=document.getElementById('live-date');\n  if(te) te.textContent=now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});\n  if(de) de.textContent=now.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});\n  updateSessionBar();\n}\n\n// ── SHOW USER MENU ──\nfunction showUserMenu(){\n  const menu=['Cerrar sesión'];\n  if(can('canAdmin')) menu.unshift('Gestión de usuarios');\n  const choice=menu.length>1?\n    confirm('¿Ir a gestión de usuarios?\n\nCancelar = cerrar sesión'):false;\n  if(choice && can('canAdmin')){ switchTab('admin');return; }\n  if(menu.length===1||!choice) doLogout();\n}\n\n// Enter key on login\ndocument.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});\ndocument.getElementById('inp-user').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inp-pass').focus()});\n\n// Close modal on overlay click\ndocument.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});\n\n// SW\nif('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});\n\n// ── INIT ──\nupdateClock();\nsetInterval(updateClock,1000);\n\n// Try restore session\nif(restoreSession()){\n  document.getElementById('login-screen').style.display='none';\n  document.getElementById('app').style.display='flex';\n  onLoginSuccess();\n}\n</script>\n</body>\n</html>\n
+    if(lowAfter>0) chips.innerHTML+=`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">↑ ${lowAfter} &lt;80% post-entrega</span>`;
+    if(noOrder>0)  chips.innerHTML+=`<span style="background:rgba(78,95,122,0.15);border:0.5px solid var(--border);color:var(--muted2);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">— ${noOrder} sin pedir</span>`;
+    scroll.appendChild(chips);
+  }
+
+  // ── Per-bin rows via TANDEM_DEFS ──
+  const binById=Object.fromEntries(sorted.map(b=>[b.id,b]));
+  const innerScroll=document.createElement('div');
+  innerScroll.style.cssText='flex:1;overflow-y:auto;padding:6px 10px 16px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch';
+  innerScroll.style.setProperty('-webkit-overflow-scrolling','touch');
+
+  let lastGrp='';
+  TANDEM_DEFS.forEach(def=>{
+    const defBins=def.ids.map(id=>binById[id]).filter(Boolean);
+    if(!defBins.length) return;
+
+    // Group header
+    if(def.group!==lastGrp){
+      lastGrp=def.group;
+      const grpInv=sorted.filter(b=>b.group===def.group).reduce((s,b)=>s+(b.cap*b.level/100),0);
+      const grpCap=sorted.filter(b=>b.group===def.group).reduce((s,b)=>s+b.cap,0);
+      const grpOrd=sorted.filter(b=>b.group===def.group).reduce((s,b)=>s+(orderTons[b.id]||0),0);
+      const grpPct=Math.round(grpInv/grpCap*100);
+      const gh=document.createElement('div');
+      gh.style.cssText='display:flex;justify-content:space-between;padding:10px 2px 4px;border-bottom:0.5px solid var(--border);margin-bottom:4px';
+      gh.innerHTML=`<span style="font-family:var(--mono);font-size:9px;color:var(--muted2);font-weight:600;letter-spacing:1px">${def.group.toUpperCase()}</span>
+        <span style="display:flex;gap:10px">
+          <span style="font-family:var(--mono);font-size:9px;color:${col(grpPct)};font-weight:600">${grpPct}% prom.</span>
+          ${grpOrd>0?`<span style="font-family:var(--mono);font-size:9px;color:var(--blue)">${grpOrd.toFixed(1)}t pedidas</span>`:''}
+        </span>`;
+      innerScroll.appendChild(gh);
+    }
+
+    // Wrap in tandem box if multiple
+    const wrapper=document.createElement('div');
+    if(defBins.length>1){
+      wrapper.style.cssText=`border:1px solid rgba(41,128,185,0.4);border-radius:10px;overflow:hidden;margin-bottom:0`;
+      const tlabel=document.createElement('div');
+      tlabel.style.cssText='background:rgba(41,128,185,0.07);border-bottom:0.5px solid rgba(41,128,185,0.2);padding:5px 12px;font-family:var(--mono);font-size:8px;color:var(--blue);display:flex;gap:5px;align-items:center';
+      tlabel.innerHTML=`<span>⇄</span> Bodega ${def.barn}`;
+      wrapper.appendChild(tlabel);
+    }
+
+    defBins.forEach((bin,i)=>{
+      const inv=bin.cap*bin.level/100;
+      const space=Math.max(0,bin.cap-inv);
+      const order=orderTons[bin.id]||0;
+      const afterPct=Math.min(100,Math.round((inv+order)/bin.cap*100));
+      const delta=order-space;
+      const isOverfill=delta>0.1&&order>0;
+      const isLow=afterPct<80&&order>0;
+      const hasOrder=order>0;
+
+      const row=document.createElement('div');
+      row.style.cssText=`padding:11px 12px;background:var(--card);${defBins.length>1&&i<defBins.length-1?'border-bottom:0.5px solid var(--border)':''}`;
+
+      // Mini progress bar helper
+      const bar=(pct,color)=>`<div style="width:100%;height:5px;background:var(--s2);border-radius:3px;margin-top:3px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${color};opacity:0.85;border-radius:3px"></div>
+        <div style="position:absolute;left:20%;top:0;width:1px;height:100%;background:rgba(192,57,43,0.4)"></div>
+      </div>`;
+
+      row.innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <span style="font-family:var(--sans);font-size:12px;font-weight:700;color:var(--text)">${bin.name}</span>
+              <span style="font-family:var(--mono);font-size:8px;color:var(--muted2);background:var(--s2);border:1px solid var(--border2);border-radius:2px;padding:0 4px">${bin.barn}</span>
+              ${bin.notes?`<span style="font-family:var(--mono);font-size:7px;color:var(--yellow);background:rgba(230,126,34,0.1);border:0.5px solid rgba(230,126,34,0.3);border-radius:2px;padding:0 4px">${bin.notes}</span>`:''}
+            </div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${bin.diet}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--mono);font-size:20px;font-weight:600;color:${col(bin.level)};line-height:1">${bin.level}%</div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--muted)">ahora</div>
+          </div>
+        </div>
+
+        <!-- Current level bar -->
+        <div style="position:relative">${bar(bin.level,col(bin.level))}</div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--muted);margin-top:1px margin-bottom:6px">
+          <span>Actual</span><span>${bin.level}%</span>
+        </div>
+
+        <!-- Data grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px 8px;margin-top:8px">
+          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">CAPACIDAD</div>
+               <div style="font-family:var(--mono);font-size:10px;color:var(--text);font-weight:600">${bin.cap} t</div></div>
+          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">INVENTARIO</div>
+               <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${col(bin.level)}">${inv.toFixed(2)} t</div></div>
+          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">ESPACIO LIBRE</div>
+               <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--yellow)">${space.toFixed(2)} t</div></div>
+        </div>
+
+        ${hasOrder?`
+        <div style="border-top:0.5px solid var(--border);margin-top:8px;padding-top:8px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px 8px;margin-bottom:6px">
+            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">ORDEN</div>
+                 <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--blue)">${order.toFixed(1)} t</div></div>
+            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">POST-ENTREGA</div>
+                 <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${col(afterPct)}">${afterPct}%</div></div>
+            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${isOverfill?'EXCESO':'DIFERENCIA'}</div>
+                 <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${isOverfill?'var(--red)':delta<-0.1?'var(--yellow)':'var(--green)'}">${delta>0?'+':''}${delta.toFixed(2)} t</div></div>
+          </div>
+          <div style="position:relative">${bar(afterPct,col(afterPct))}</div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--muted);margin-top:1px">
+            <span>Post-entrega</span><span>${afterPct}%</span>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">
+            ${isOverfill?`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">⚠ Sobrellenado +${delta.toFixed(2)}t</span>`:''}
+            ${isLow?`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">↑ Quedará al ${afterPct}%</span>`:''}
+            ${!isOverfill&&!isLow?`<span style="background:rgba(39,174,96,0.12);border:0.5px solid rgba(39,174,96,0.4);color:var(--green);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">✓ OK post-entrega</span>`:''}
+          </div>
+        </div>`:`
+        <div style="background:rgba(78,95,122,0.07);border:0.5px solid rgba(78,95,122,0.2);border-radius:5px;padding:7px 10px;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--muted)">
+          — Sin pedido registrado para este bin
+        </div>`}`;
+
+      wrapper.appendChild(row);
+    });
+
+    innerScroll.appendChild(wrapper);
+  });
+
+  // ── Grand total footer ──
+  const footer=document.createElement('div');
+  footer.style.cssText='background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:7px;margin-top:4px';
+  footer.innerHTML=`
+    <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES — 22 BINS</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px">
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">CAPACIDAD TOTAL</div>
+           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)">${totalCap.toFixed(0)} t</div></div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">INVENTARIO TOTAL</div>
+           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green)">${totalInv.toFixed(2)} t</div></div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">ESPACIO LIBRE</div>
+           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--yellow)">${totalSpace.toFixed(2)} t</div></div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">TOTAL ORDENADO</div>
+           <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue)">${totalOrder.toFixed(2)} t</div></div>
+    </div>
+    <div style="border-top:0.5px solid rgba(39,174,96,0.3);padding-top:7px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted2)">NIVEL POST-ENTREGA ESTIMADO</span>
+      <span style="font-family:var(--mono);font-size:20px;font-weight:600;color:${col(overallAfter)}">${overallAfter}%</span>
+    </div>
+    <div style="position:relative">
+      <div style="width:100%;height:6px;background:var(--s2);border-radius:3px;overflow:hidden">
+        <div style="width:${overallAfter}%;height:100%;background:${col(overallAfter)};opacity:0.85;border-radius:3px"></div>
+      </div>
+    </div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--muted);text-align:right">Promedio global post-entrega</div>`;
+  innerScroll.appendChild(footer);
+  scroll.appendChild(innerScroll);
+}
+
+// ── TABS ──
+function switchTab(tab){
+  currentTab=tab;
+  ['bins','lecturas','orden','comparativa','admin'].forEach(t=>{
+    const v=document.getElementById('view-'+t);if(v) v.style.display=t===tab?'flex':'none';
+    const tb=document.getElementById('tab-'+t);if(tb) tb.className=tb.className.replace(' on','')+(t===tab?' on':'');
+  });
+  if(tab==='lecturas'){
+    renderResumen();   // siempre mostrar resumen primero
+    renderLecturas();  // precarga historial en background
+  }
+  if(tab==='orden')       renderOrder();
+  if(tab==='comparativa') renderComparativa();
+  if(tab==='admin')       renderAdmin();
+}
+function updateOrderSummary(){
+  const box=document.getElementById('order-summary');
+  const entries=allBins.filter(b=>(orderTons[b.id]||0)>0);
+  if(!entries.length){box.style.display='none';return}
+  box.style.display='flex';
+  const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);
+  let html=`<div class="order-sum-title">Resumen de Orden — ${new Date().toLocaleDateString('es-MX')}</div>`;
+  entries.forEach(b=>{ html+=`<div class="order-sum-row"><span>${b.name} (${b.barn})</span><span>${orderTons[b.id]} t</span></div>`; });
+  html+=`<div class="order-sum-total"><span>TOTAL</span><span>${total.toFixed(1)} toneladas</span></div>`;
+  box.innerHTML=html;
+}
+function autoFillOrder(){
+  if(!can('canOrder')){showToast('Sin permiso','err');return}
+  allBins.forEach(bin=>{
+    const needed=Math.max(0,bin.cap-(bin.cap*bin.level/100));
+    orderTons[bin.id]=Math.round(needed*2)/2;
+    const inp=document.getElementById('ord-'+bin.id);if(inp) inp.value=orderTons[bin.id]||'';
+  });
+  updateOrderSummary();showToast('✓ Auto-llenado calculado');
+}
+function clearOrder(){
+  if(!can('canOrder')){showToast('Sin permiso','err');return}
+  orderTons={};
+  allBins.forEach(b=>{const i=document.getElementById('ord-'+b.id);if(i)i.value=''});
+  updateOrderSummary();saveOrderData();showToast('Orden limpiada');
+}
+function saveOrder(){
+  if(!can('canOrder')){showToast('Sin permiso','err');return}
+  saveOrderData();
+  const entries=allBins.filter(b=>(orderTons[b.id]||0)>0);
+  if(!entries.length){showToast('Ingresa al menos una cantidad');return}
+  const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);
+  showToast(`✓ Orden guardada — ${total.toFixed(1)} ton`);
+}
+
+// ── ADMIN PANEL ──
+function renderAdmin(){
+  if(!can('canAdmin')){return}
+  const screen=document.getElementById('admin-screen');
+  screen.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="admin-section-title">Gestión de Usuarios</div>
+      <button class="tbl-btn primary" onclick="openAddUserModal()">+ Agregar</button>
+    </div>
+    <div id="users-list"></div>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.6">
+      <div style="color:var(--text);font-size:10px;margin-bottom:6px;font-weight:600">Roles y Permisos</div>
+      <div><span style="color:#c39bd3">■ ADMIN</span> — Todo: bodegas, lecturas, orden, usuarios</div>
+      <div><span style="color:#82e0aa">■ OPERADOR</span> — Puede ver y guardar lecturas, cambiar estado abierto/cerrado</div>
+      <div><span style="color:#7fb3d3">■ VISITANTE</span> — Solo lectura, no puede guardar ni modificar</div>
+      <div style="margin-top:8px;color:var(--yellow)">⏱ Sesión: 8 horas por turno</div>
+    </div>`;
+  renderUsersList();
+}
+
+function renderUsersList(){
+  const container=document.getElementById('users-list');
+  if(!container) return;
+  container.innerHTML='';
+  users.forEach(u=>{
+    const card=document.createElement('div');card.className='user-card';
+    const isSelf=u.id===currentUser.id;
+    card.innerHTML=`
+      <div class="user-card-avatar" style="background:${u.color}">${initials(u.name)}</div>
+      <div class="user-card-info">
+        <div class="user-card-name">${u.name} ${isSelf?'<span style="font-size:9px;color:var(--muted)">(tú)</span>':''}</div>
+        <div class="user-card-user">@${u.username} · <span class="user-role-badge role-${u.role}" style="font-size:8px">${u.role.toUpperCase()}</span></div>
+        <div style="font-family:var(--mono);font-size:9px;color:${u.active?'var(--green)':'var(--red)'};margin-top:2px">${u.active?'● Activo':'● Inactivo'}</div>
+      </div>
+      <div class="user-card-actions">
+        <button class="uc-btn" onclick="openEditUserModal('${u.id}')">Editar</button>
+        ${!isSelf?`<button class="uc-btn danger" onclick="deleteUser('${u.id}')">Eliminar</button>`:''}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function openAddUserModal(){
+  openUserModal(null);
+}
+function openEditUserModal(uid){
+  openUserModal(uid);
+}
+function openUserModal(uid){
+  const u = uid ? users.find(u=>u.id===uid) : null;
+  const colors=['#8e44ad','#27ae60','#2980b9','#e67e22','#c0392b','#16a085'];
+  const modal=document.getElementById('modal');
+  const box=document.getElementById('modal-box');
+  box.innerHTML=`
+    <div class="modal-title">${u?'Editar Usuario':'Nuevo Usuario'}</div>
+    <div class="modal-field"><div class="modal-lbl">Nombre completo</div>
+      <input class="modal-input" id="m-name" value="${u?u.name:''}" placeholder="Ej: Juan García"></div>
+    <div class="modal-field"><div class="modal-lbl">Usuario (login)</div>
+      <input class="modal-input" id="m-user" value="${u?u.username:''}" placeholder="juangarcia" autocapitalize="none"></div>
+    <div class="modal-field"><div class="modal-lbl">Contraseña ${u?'(dejar vacío para no cambiar)':''}</div>
+      <input class="modal-input" id="m-pass" type="password" placeholder="Mínimo 6 caracteres"></div>
+    <div class="modal-field"><div class="modal-lbl">Rol</div>
+      <select class="modal-input" id="m-role">
+        <option value="operador" ${u?.role==='operador'?'selected':''}>Operador</option>
+        <option value="visitante" ${u?.role==='visitante'?'selected':''}>Visitante</option>
+        <option value="admin" ${u?.role==='admin'?'selected':''}>Administrador</option>
+      </select></div>
+    <div class="modal-field"><div class="modal-lbl">Color</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="m-colors">
+        ${colors.map(c=>`<div onclick="selectColor('${c}')" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(u?.color===c)?'white':'transparent'};transition:border 0.1s" id="mc-${c.replace('#','')}"></div>`).join('')}
+      </div></div>
+    ${u?`<div class="modal-field"><div class="modal-lbl">Estado</div>
+      <select class="modal-input" id="m-active">
+        <option value="true" ${u.active?'selected':''}>Activo</option>
+        <option value="false" ${!u.active?'selected':''}>Inactivo</option>
+      </select></div>`:''}
+    <div class="modal-error" id="m-err"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn confirm" onclick="saveUserModal('${uid||''}')">Guardar</button>
+    </div>`;
+  window._selectedColor = u?.color || colors[0];
+  modal.classList.add('show');
+}
+
+function selectColor(c){
+  window._selectedColor=c;
+  document.querySelectorAll('[id^="mc-"]').forEach(el=>{el.style.borderColor='transparent'});
+  const el=document.getElementById('mc-'+c.replace('#',''));
+  if(el) el.style.borderColor='white';
+}
+
+function saveUserModal(uid){
+  const name=document.getElementById('m-name').value.trim();
+  const username=document.getElementById('m-user').value.trim().toLowerCase();
+  const pass=document.getElementById('m-pass').value;
+  const role=document.getElementById('m-role').value;
+  const errEl=document.getElementById('m-err');
+  if(!name||!username){errEl.textContent='Nombre y usuario son requeridos';errEl.classList.add('show');return}
+  if(!uid&&!pass){errEl.textContent='La contraseña es requerida para nuevos usuarios';errEl.classList.add('show');return}
+  if(pass&&pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';errEl.classList.add('show');return}
+  const dup=users.find(u=>u.username===username&&u.id!==uid);
+  if(dup){errEl.textContent='Ese usuario ya existe';errEl.classList.add('show');return}
+  if(uid){
+    const u=users.find(u=>u.id===uid);
+    if(u){
+      u.name=name;u.username=username;u.role=role;u.color=window._selectedColor;
+      if(pass) u.password=pass;
+      const activeEl=document.getElementById('m-active');
+      if(activeEl) u.active=activeEl.value==='true';
+    }
+  } else {
+    users.push({id:'u'+Date.now(),name,username,password:pass,role,color:window._selectedColor,active:true});
+  }
+  saveUsers();closeModal();renderUsersList();
+  showToast(uid?'Usuario actualizado':'✓ Usuario creado');
+}
+
+function deleteUser(uid){
+  if(uid===currentUser.id){showToast('No puedes eliminarte a ti mismo','err');return}
+  const u=users.find(u=>u.id===uid);
+  if(!confirm(`¿Eliminar usuario "${u?.name}"?`))return;
+  users=users.filter(u=>u.id!==uid);saveUsers();renderUsersList();
+  showToast('Usuario eliminado');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('show');
+}
+
+// ── TOAST ──
+function showToast(msg, type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(type==='err'?' error-toast':'');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ── CLOCK ──
+function updateClock(){
+  const now=new Date();
+  const te=document.getElementById('live-time');const de=document.getElementById('live-date');
+  if(te) te.textContent=now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  if(de) de.textContent=now.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+  updateSessionBar();
+}
+
+// ── SHOW USER MENU ──
+function showUserMenu(){
+  const menu=['Cerrar sesión'];
+  if(can('canAdmin')) menu.unshift('Gestión de usuarios');
+  const choice=menu.length>1?
+    confirm('¿Ir a gestión de usuarios?\n\nCancelar = cerrar sesión'):false;
+  if(choice && can('canAdmin')){ switchTab('admin');return; }
+  if(menu.length===1||!choice) doLogout();
+}
+
+// Enter key on login
+document.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('inp-user').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inp-pass').focus()});
+
+// Close modal on overlay click
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+
+// SW
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+// ── INIT ──
+updateClock();
+setInterval(updateClock,1000);
+
+// Try restore session
+if(restoreSession()){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  onLoginSuccess();
+}
+</script>
+</body>
+</html>
