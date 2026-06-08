@@ -574,6 +574,15 @@ function initFirestoreSync(){
     }
   },err=>console.warn('FB users listener error',err));
 
+  // Real-time users sync
+  db.collection('users').doc('list').onSnapshot(doc=>{
+    if(doc.exists && doc.data().users && doc.data().users.length){
+      users = doc.data().users;
+      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+      if(document.getElementById('users-list')) renderUsersList();
+    }
+  },err=>console.warn('FB users listener error',err));
+
   // Load bins from Firestore on first login
   db.collection('bins').get().then(snapshot=>{
     if(snapshot.empty){
