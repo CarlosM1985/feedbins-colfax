@@ -475,7 +475,10 @@ function saveUsers(){
 }
 
 let users = loadUsers();
-// Load users from Firestore before login so all devices share the same user list
+// Load users from Firestore before login so all devices share the same user list.
+// usersReady resolves once we know if Firestore has an updated list (or falls back to cache/defaults).
+let _resolveUsersReady;
+const usersReady = new Promise(resolve => { _resolveUsersReady = resolve; });
 db.collection('users').doc('list').get().then(doc=>{
   if(doc.exists && doc.data().users && doc.data().users.length){
     users = doc.data().users;
@@ -483,7 +486,8 @@ db.collection('users').doc('list').get().then(doc=>{
   } else {
     db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users init error',e));
   }
-}).catch(e=>console.warn('FB users load error',e));
+  _resolveUsersReady();
+}).catch(e=>{ console.warn('FB users load error',e); _resolveUsersReady(); });
 let currentUser = null; // {id, name, username, role, color}
 let sessionExpiry = 0;
 
@@ -499,23 +503,28 @@ function initials(name){ return name.split(' ').map(w=>w[0]).join('').toUpperCas
 
 // ── LOGIN ──
 function doLogin(){
-  const uval = document.getElementById('inp-user').value.trim().toLowerCase();
-  const pval = document.getElementById('inp-pass').value;
-  const errEl = document.getElementById('login-error');
-  const user = users.find(u => u.username.toLowerCase()===uval && u.password===pval && u.active);
-  if(!user){
-    errEl.classList.add('show');
-    document.getElementById('inp-pass').value='';
-    document.getElementById('inp-pass').classList.add('error');
-    setTimeout(()=>{ errEl.classList.remove('show'); document.getElementById('inp-pass').classList.remove('error'); }, 2500);
-    return;
-  }
-  currentUser = { id:user.id, name:user.name, username:user.username, role:user.role, color:user.color };
-  sessionExpiry = Date.now() + SESSION_MS;
-  try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser, expiry:sessionExpiry})); }catch(e){}
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  onLoginSuccess();
+  const btn = document.querySelector('.login-btn');
+  if(btn) { btn.disabled=true; btn.textContent='CARGANDO...'; }
+  usersReady.then(()=>{
+    if(btn) { btn.disabled=false; btn.textContent='INGRESAR'; }
+    const uval = document.getElementById('inp-user').value.trim().toLowerCase();
+    const pval = document.getElementById('inp-pass').value;
+    const errEl = document.getElementById('login-error');
+    const user = users.find(u => u.username.toLowerCase()===uval && u.password===pval && u.active);
+    if(!user){
+      errEl.classList.add('show');
+      document.getElementById('inp-pass').value='';
+      document.getElementById('inp-pass').classList.add('error');
+      setTimeout(()=>{ errEl.classList.remove('show'); document.getElementById('inp-pass').classList.remove('error'); }, 2500);
+      return;
+    }
+    currentUser = { id:user.id, name:user.name, username:user.username, role:user.role, color:user.color };
+    sessionExpiry = Date.now() + SESSION_MS;
+    try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser, expiry:sessionExpiry})); }catch(e){}
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    onLoginSuccess();
+  });
 }
 
 function restoreSession(){
@@ -566,15 +575,6 @@ function initFirestoreSync(){
   },err=>console.warn('FB listener error',err));
 
   // Real-time users sync — admin changes propagate to all devices
-  db.collection('users').doc('list').onSnapshot(doc=>{
-    if(doc.exists && doc.data().users && doc.data().users.length){
-      users = doc.data().users;
-      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
-      if(document.getElementById('users-list')) renderUsersList();
-    }
-  },err=>console.warn('FB users listener error',err));
-
-  // Real-time users sync
   db.collection('users').doc('list').onSnapshot(doc=>{
     if(doc.exists && doc.data().users && doc.data().users.length){
       users = doc.data().users;
