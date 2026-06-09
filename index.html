@@ -352,6 +352,7 @@ select.modal-input{cursor:pointer}
       <div class="sum-c"><div class="sum-lbl">Cerradas</div><div class="sum-val cb" id="closed-v">0</div></div>
     </div>
     <div class="scroll"><div id="bins-list"></div></div>
+    <button id="btn-enviar-ronda" onclick="enviarRonda()" style="display:none;margin:12px 16px 8px;padding:12px;background:linear-gradient(135deg,#2980b9,#1a5c8a);color:white;border:none;border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.5px;cursor:pointer;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 12px rgba(41,128,185,0.4)">✉ Enviar ronda</button>
   </div>
 
   <!-- LECTURAS -->
@@ -584,6 +585,15 @@ function initFirestoreSync(){
     }
   },err=>console.warn('FB users listener error',err));
 
+  // Real-time users sync
+  db.collection('users').doc('list').onSnapshot(doc=>{
+    if(doc.exists && doc.data().users && doc.data().users.length){
+      users = doc.data().users;
+      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+      if(document.getElementById('users-list')) renderUsersList();
+    }
+  },err=>console.warn('FB users listener error',err));
+
   // Load bins from Firestore on first login
   db.collection('bins').get().then(snapshot=>{
     if(snapshot.empty){
@@ -640,6 +650,7 @@ function onLoginSuccess(){
   const bch = document.getElementById('btn-clear-hist');
   if(bch) bch.style.display = can('canDeleteHist') ? 'block' : 'none';
 
+  sessionReadings=new Set(); sessionStart=null;
   renderFilters();
   renderBins();
   switchTab('bins');
@@ -712,6 +723,7 @@ function saveOrderData(){
 
 let allBins=loadBins(), history=loadHistory(), orderTons=loadOrder();
 let expanded=null, activeFilter="Todos", currentTab='bins';
+let sessionReadings=new Set(), sessionStart=null;
 const filters=["Todos","Gestación","Breeding","Lactación","Críticos","Cerrados"];
 
 // ── HELPERS ──
@@ -721,7 +733,7 @@ function valCls(p){return p>=20?'cg':'cy'}
 function fmtTs(ts){if(!ts)return'—';const d=new Date(ts);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}
 function nowTs(){return new Date().toISOString()}
 
-function makeSVG(p,color,w,h){
+function makeSVG(p,color,w,h,cap=null){
   const bt=h*0.12,bb=h*0.80,bh=bb-bt,fh=bh*p/100,fy=bb-fh;
   const lx=w*0.14,rx=w*0.86,uid='sv'+p+'w'+Math.round(w)+color.replace('#','');
   return `<svg viewBox="0 0 ${w} ${h}" fill="none"><defs><clipPath id="${uid}"><rect x="${lx}" y="${bt}" width="${w*0.72}" height="${bh}" rx="2"/></clipPath></defs>
@@ -733,6 +745,7 @@ function makeSVG(p,color,w,h){
     <path d="M${lx} ${bb} L${w*.5} ${h*0.95} L${rx} ${bb} Z" fill="${p>0?color:'#111520'}" opacity="${p>0?'0.85':'1'}" stroke="${p>0?color:'#242d42'}" stroke-width="1"/>
     <line x1="${w*0.30}" y1="${h*0.93}" x2="${w*0.24}" y2="${h}" stroke="${p>0?color:'#242d42'}" stroke-width="1.5" opacity="${p>0?'0.6':'1'}"/>
     <line x1="${w*0.70}" y1="${h*0.93}" x2="${w*0.76}" y2="${h}" stroke="${p>0?color:'#242d42'}" stroke-width="1.5" opacity="${p>0?'0.6':'1'}"/>
+    ${(()=>{let t='';if(cap&&cap>0&&w>=100){const bt2=h*0.12,bb2=h*0.80,bh2=bb2-bt2,rx2=w*0.86;for(let i=1;i<cap;i++){const ty=bb2-(bh2*i/cap);const isH=(cap>=6&&i===Math.floor(cap/2));t+=`<line x1="${rx2}" y1="${ty}" x2="${rx2+4}" y2="${ty}" stroke="#4e5f7a" stroke-width="${isH?1.5:0.8}"/>`;t+=`<text x="${rx2+6}" y="${ty+2.5}" font-size="5.5" fill="${isH?'#7a8fa8':'#4e5f7a'}" font-family="monospace">${i}t</text>`;}}return t;})()}
   </svg>`;
 }
 
@@ -774,7 +787,7 @@ function onSlide(binId,val){
   bin.level=parseInt(val);
   const color=col(bin.level);
   const esvg=document.getElementById('esvg-'+binId);
-  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
+  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154,bin.cap||bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
   const ep=document.getElementById('epb-'+binId);if(ep){ep.textContent=bin.level+'%';ep.className='exp-pct-big '+valCls(bin.level)}
   const inv=(bin.cap*bin.level/100).toFixed(2);
   const et=document.getElementById('eton-'+binId);if(et) et.textContent=inv+' ton de '+bin.cap;
@@ -825,6 +838,9 @@ function saveLevel(binId){
   if(history.length>1000) history=history.slice(0,1000);
   saveSingleBin(bin);saveHistData(history[0]);
   showToast('✓ '+bin.name+' — '+bin.level+'% guardado');
+  sessionReadings.add(binId);
+  if(!sessionStart) sessionStart=new Date();
+  updateEnviarBtn();
   renderFilters();
   const card=document.querySelector(`[data-binid="${binId}"]`);
   if(card){
@@ -1385,6 +1401,25 @@ function renderComparativa(){
     <div style="font-family:var(--mono);font-size:8px;color:var(--muted);text-align:right">Promedio global post-entrega</div>`;
   innerScroll.appendChild(footer);
   scroll.appendChild(innerScroll);
+}
+
+// ── ENVIAR RONDA ──
+function updateEnviarBtn(){
+  const btn=document.getElementById('btn-enviar-ronda');
+  if(!btn) return;
+  if(sessionReadings.size>0){
+    btn.style.display='flex';
+    btn.textContent='✉ Enviar ronda ('+sessionReadings.size+' bins)';
+  } else { btn.style.display='none'; }
+}
+function enviarRonda(){
+  if(!can('canSave')){showToast('Sin permiso','err');return}
+  if(!sessionReadings.size){showToast('No hay lecturas en esta sesión');return}
+  const binsRead=allBins.filter(b=>sessionReadings.has(b.id));
+  const summary=binsRead.map(b=>({id:b.id,name:b.name,barn:b.barn,level:b.level,ts:b.ts}));
+  const ronda={ts:new Date().toISOString(),user:currentUser.name,role:currentUser.role,binCount:sessionReadings.size,sessionStart:sessionStart?sessionStart.toISOString():null,bins:summary};
+  db.collection('rondas').add(ronda).then(()=>{showToast('✓ Ronda enviada — '+sessionReadings.size+' bins registrados');}).catch(e=>{showToast('Error al enviar ronda','err');console.warn(e);});
+  sessionReadings=new Set();sessionStart=null;updateEnviarBtn();
 }
 
 // ── TABS ──
