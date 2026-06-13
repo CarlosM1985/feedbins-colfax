@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FeedBins">
 <link rel="manifest" href="manifest.json">
-<title>FeedBins Â· Colfax</title>
+<title>FeedBins · Colfax</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -26,9 +26,9 @@
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
 
-/* ââââââââââââââââââââââââââââââââââ
+/* ══════════════════════════════════
    LOGIN SCREEN
-ââââââââââââââââââââââââââââââââââ */
+══════════════════════════════════ */
 #login-screen{
   position:fixed;inset:0;background:var(--bg);
   display:flex;flex-direction:column;align-items:center;
@@ -73,9 +73,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .login-error.show{display:block}
 .login-version{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:20px;text-align:center}
 
-/* ââââââââââââââââââââââââââââââââââ
+/* ══════════════════════════════════
    APP SHELL
-ââââââââââââââââââââââââââââââââââ */
+══════════════════════════════════ */
 #app{display:flex;flex-direction:column;height:100dvh;max-width:500px;margin:0 auto;position:relative;display:none}
 
 /* TOPBAR */
@@ -134,7 +134,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 /* TANDEM GROUP */
 .tandem-group{border:1px solid var(--blue);border-radius:10px;overflow:hidden;margin-bottom:7px}
 .tandem-label{background:rgba(41,128,185,0.07);border-bottom:1px solid rgba(41,128,185,0.18);padding:5px 12px;font-family:var(--mono);font-size:8px;color:var(--blue);letter-spacing:0.8px;display:flex;align-items:center;gap:5px}
-.tandem-label::before{content:"â";font-size:10px}
+.tandem-label::before{content:"⇄";font-size:10px}
 .tandem-group .bin-card{border-radius:0;border:none;border-bottom:1px solid var(--border);margin-bottom:0}
 .tandem-group .bin-card:last-child{border-bottom:none}
 
@@ -211,8 +211,13 @@ textarea.notes-input:disabled{opacity:0.5;cursor:not-allowed}
 /* Save */
 .save-btn{width:100%;background:var(--green);color:#051a0e;border:none;border-radius:7px;padding:11px;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:0.8px;cursor:pointer;transition:opacity 0.15s;-webkit-tap-highlight-color:transparent}
 .save-btn:active{opacity:0.75}
+.btn-listo{width:100%;border:none;border-radius:7px;padding:13px;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.5px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.btn-listo.pendiente-btn{background:var(--green);color:#051a0e}
+.btn-listo.ya-listo{background:var(--green-dim);color:var(--green);border:1px solid var(--green)}
+.aviso-ronda{background:rgba(41,128,185,.1);border:1px solid rgba(41,128,185,.25);border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:9px;color:#7fb3d3;text-align:center}
+.check-badge{width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-left:2px}
 
-/* ââ TABLE SCREENS ââ */
+/* ══ TABLE SCREENS ══ */
 .table-screen{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),12px)}
 .table-screen::-webkit-scrollbar{display:none}
 .tbl-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -250,7 +255,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .order-sum-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text)}
 .order-sum-total{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--green);border-top:1px solid rgba(39,174,96,0.3);padding-top:6px;margin-top:2px;display:flex;justify-content:space-between}
 
-/* ââ ADMIN / USERS PANEL ââ */
+/* ══ ADMIN / USERS PANEL ══ */
 .admin-screen{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),12px)}
 .admin-screen::-webkit-scrollbar{display:none}
 .admin-section-title{font-family:var(--sans);font-size:13px;font-weight:800;color:var(--text);padding-bottom:6px;border-bottom:1px solid var(--border)}
@@ -292,14 +297,24 @@ select.modal-input{cursor:pointer}
 .toast{position:fixed;bottom:max(env(safe-area-inset-bottom),14px);left:12px;right:12px;max-width:500px;margin:0 auto;background:var(--green);color:#051a0e;font-family:var(--sans);font-size:12px;font-weight:800;padding:11px 14px;border-radius:7px;text-align:center;opacity:0;transform:translateY(16px);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:300;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
 .toast.error-toast{background:var(--red);color:#fff}
+
+/* ══ FULLSCREEN BIN DETAIL ══ */
+#fs-bin-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;max-width:500px;margin:0 auto}
+#fs-bin-overlay.show{display:flex}
+.fs-bin-topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:max(env(safe-area-inset-top),10px) 12px 9px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.fs-back-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:10px;padding:6px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.fs-back-btn:active{opacity:0.7}
+.fs-bin-title{font-family:var(--sans);font-size:14px;font-weight:800;flex:1}
+.fs-bin-scroll{flex:1;overflow-y:auto;padding:12px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),16px)}
+.fs-bin-scroll::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
 
-<!-- ââââââââââ LOGIN SCREEN ââââââââââ -->
+<!-- ══════════ LOGIN SCREEN ══════════ -->
 <div id="login-screen">
   <div class="login-logo"><em>Feed</em>Bins</div>
-  <div class="login-subtitle">GRANJA COLFAX Â· SISTEMA DE BODEGAS</div>
+  <div class="login-subtitle">GRANJA COLFAX · SISTEMA DE BODEGAS</div>
   <div class="login-box">
     <div class="login-field">
       <div class="login-lbl">Usuario</div>
@@ -307,17 +322,17 @@ select.modal-input{cursor:pointer}
         placeholder="usuario" autocapitalize="none" autocorrect="off" spellcheck="false">
     </div>
     <div class="login-field">
-      <div class="login-lbl">ContraseÃ±a</div>
+      <div class="login-lbl">Contraseña</div>
       <input class="login-input" id="inp-pass" type="password" autocomplete="current-password"
-        placeholder="â¢â¢â¢â¢â¢â¢â¢â¢">
+        placeholder="••••••••">
     </div>
-    <div class="login-error" id="login-error">Usuario o contraseÃ±a incorrectos</div>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
     <button class="login-btn" onclick="doLogin()">INGRESAR</button>
   </div>
-  <div class="login-version">FeedBins v4.0 Â· SesiÃ³n de 8 horas</div>
+  <div class="login-version">FeedBins v4.0 · Sesión de 8 horas</div>
 </div>
 
-<!-- ââââââââââ APP SHELL ââââââââââ -->
+<!-- ══════════ APP SHELL ══════════ -->
 <div id="app">
   <div class="topbar">
     <div class="logo"><em>Feed</em>Bins</div>
@@ -335,11 +350,11 @@ select.modal-input{cursor:pointer}
   </div>
 
   <div class="tabs" id="tabs-row">
-    <div class="tab on" id="tab-bins"      onclick="switchTab('bins')">ð BODEGAS</div>
-    <div class="tab"    id="tab-lecturas"  onclick="switchTab('lecturas')">ð LECTURAS</div>
-    <div class="tab"    id="tab-orden"     onclick="switchTab('orden')">ð ORDEN</div>
-    <div class="tab"    id="tab-comparativa" onclick="switchTab('comparativa')">ð COMPARATIVA</div>
-    <div class="tab hidden" id="tab-admin" onclick="switchTab('admin')">âï¸ USUARIOS</div>
+    <div class="tab on" id="tab-bins"      onclick="switchTab('bins')">📊 BODEGAS</div>
+    <div class="tab"    id="tab-lecturas"  onclick="switchTab('lecturas')">📋 LECTURAS</div>
+    <div class="tab"    id="tab-orden"     onclick="switchTab('orden')">🛒 ORDEN</div>
+    <div class="tab"    id="tab-comparativa" onclick="switchTab('comparativa')">📈 COMPARATIVA</div>
+    <div class="tab hidden" id="tab-admin" onclick="switchTab('admin')">⚙️ USUARIOS</div>
   </div>
 
   <!-- BODEGAS -->
@@ -347,30 +362,30 @@ select.modal-input{cursor:pointer}
     <div class="filter-row" id="frow"></div>
     <div class="sum-row">
       <div class="sum-c"><div class="sum-lbl">Total</div><div class="sum-val cg" id="total-v">22</div></div>
-      <div class="sum-c"><div class="sum-lbl">Prom.</div><div class="sum-val" id="avg-v">â</div></div>
-      <div class="sum-c"><div class="sum-lbl">CrÃ­ticas</div><div class="sum-val cr" id="crit-v">0</div></div>
+      <div class="sum-c"><div class="sum-lbl">Prom.</div><div class="sum-val" id="avg-v">—</div></div>
+      <div class="sum-c"><div class="sum-lbl">Críticas</div><div class="sum-val cr" id="crit-v">0</div></div>
       <div class="sum-c"><div class="sum-lbl">Cerradas</div><div class="sum-val cb" id="closed-v">0</div></div>
     </div>
     <div class="scroll"><div id="bins-list"></div></div>
-    <button id="btn-enviar-ronda" onclick="enviarRonda()" style="display:none;margin:12px 16px 8px;padding:12px;background:linear-gradient(135deg,#2980b9,#1a5c8a);color:white;border:none;border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.5px;cursor:pointer;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 12px rgba(41,128,185,0.4)">â Enviar ronda</button>
+    <button id="btn-enviar-ronda" onclick="enviarRonda()" style="display:none;margin:12px 16px 8px;padding:12px;background:linear-gradient(135deg,#2980b9,#1a5c8a);color:white;border:none;border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.5px;cursor:pointer;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 12px rgba(41,128,185,0.4)">✉ Enviar ronda</button>
   </div>
 
   <!-- LECTURAS -->
   <div id="view-lecturas" style="display:none;flex-direction:column;flex:1;overflow:hidden">
     <!-- Sub-tabs -->
     <div style="background:var(--s1);border-bottom:1px solid var(--border);display:flex;flex-shrink:0">
-      <div id="lsub-resumen" class="tab on" style="font-size:10px" onclick="switchLecturasSub('resumen')">ð RESUMEN 22 BINS</div>
-      <div id="lsub-historial" class="tab" style="font-size:10px" onclick="switchLecturasSub('historial')">ð HISTORIAL</div>
+      <div id="lsub-resumen" class="tab on" style="font-size:10px" onclick="switchLecturasSub('resumen')">📊 RESUMEN 22 BINS</div>
+      <div id="lsub-historial" class="tab" style="font-size:10px" onclick="switchLecturasSub('historial')">📋 HISTORIAL</div>
     </div>
 
     <!-- RESUMEN: nivel actual de los 22 bins -->
     <div id="lview-resumen" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
       <div style="background:var(--s1);padding:6px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">Niveles actuales â todos los bins</div>
-        <button class="tbl-btn" onclick="exportResumenCSV()">â¬ CSV</button>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">Niveles actuales — todos los bins</div>
+        <button class="tbl-btn" onclick="exportResumenCSV()">⬇ CSV</button>
       </div>
       <div style="flex:1;overflow-y:auto;overflow-x:auto;padding:10px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-        <div id="resumen-wrap"><div class="tbl-empty">Cargandoâ¦</div></div>
+        <div id="resumen-wrap"><div class="tbl-empty">Cargando…</div></div>
       </div>
     </div>
 
@@ -379,12 +394,12 @@ select.modal-input{cursor:pointer}
       <div style="background:var(--s1);padding:6px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
         <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">Lecturas guardadas por fecha</div>
         <div style="display:flex;gap:5px">
-          <button class="tbl-btn" onclick="exportCSV()">â¬ CSV</button>
-          <button class="tbl-btn" id="btn-clear-hist" onclick="clearHistory()" style="display:none">ð Limpiar</button>
+          <button class="tbl-btn" onclick="exportCSV()">⬇ CSV</button>
+          <button class="tbl-btn" id="btn-clear-hist" onclick="clearHistory()" style="display:none">🗑 Limpiar</button>
         </div>
       </div>
       <div class="table-screen" style="padding-top:0">
-        <div class="tbl-wrap" id="lecturas-wrap"><div class="tbl-empty">Sin lecturas aÃºn.</div></div>
+        <div class="tbl-wrap" id="lecturas-wrap"><div class="tbl-empty">Sin lecturas aún.</div></div>
       </div>
     </div>
   </div>
@@ -395,12 +410,12 @@ select.modal-input{cursor:pointer}
       <div class="tbl-header">
         <div class="tbl-title">Orden de Alimento</div>
         <div class="tbl-actions">
-          <button class="tbl-btn primary" id="btn-autofill" onclick="autoFillOrder()">â¡ Auto-llenar</button>
-          <button class="tbl-btn" id="btn-clearorder" onclick="clearOrder()">ð Limpiar</button>
+          <button class="tbl-btn primary" id="btn-autofill" onclick="autoFillOrder()">⚡ Auto-llenar</button>
+          <button class="tbl-btn" id="btn-clearorder" onclick="clearOrder()">🗑 Limpiar</button>
         </div>
       </div>
       <div style="font-family:var(--mono);font-size:9px;color:var(--muted);padding:0 2px" id="order-hint">
-        Ingresa las toneladas a pedir. <strong style="color:var(--yellow)">â¡ Auto-llenar</strong> calcula para llenar cada bin al 100%.
+        Ingresa las toneladas a pedir. <strong style="color:var(--yellow)">⚡ Auto-llenar</strong> calcula para llenar cada bin al 100%.
       </div>
       <div class="order-list" id="order-list"></div>
       <div class="order-summary-box" id="order-summary" style="display:none"></div>
@@ -420,23 +435,33 @@ select.modal-input{cursor:pointer}
   </div>
 
   <div class="session-bar" id="session-bar">
-    <span>SesiÃ³n activa:</span>
+    <span>Sesión activa:</span>
     <span id="session-countdown"></span>
-    <span id="session-logout" onclick="doLogout()" style="cursor:pointer;color:var(--red)">Cerrar sesiÃ³n</span>
+    <span id="session-logout" onclick="doLogout()" style="cursor:pointer;color:var(--red)">Cerrar sesión</span>
   </div>
 </div>
 
-<!-- ââââââââââ MODAL ââââââââââ -->
+<!-- ══════════ MODAL ══════════ -->
 <div class="modal-overlay" id="modal">
   <div class="modal-box" id="modal-box"></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<!-- ══════════ FULLSCREEN BIN DETAIL ══════════ -->
+<div id="fs-bin-overlay">
+  <div class="fs-bin-topbar">
+    <button class="fs-back-btn" onclick="closeBinFS()">← Volver</button>
+    <div class="fs-bin-title" id="fs-bin-title"></div>
+    <span class="barn-tag" id="fs-bin-barn"></span>
+  </div>
+  <div class="fs-bin-scroll" id="fs-bin-body"></div>
+</div>
+
 <script>
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 //  FIREBASE
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyBB9ybANcNUf1rZCl98NcWEGX1QM3ELQA8",
   authDomain: "device-streaming-77dbed8f.firebaseapp.com",
@@ -448,23 +473,22 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 //  AUTH SYSTEM
 //  NOTE: For a production app with real security,
 //  passwords should be verified server-side.
 //  This is client-side protection suitable for
 //  internal farm use without a backend server.
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 
 const SESSION_MS = 8 * 60 * 60 * 1000; // 8 hours
 
-// Default users â admin can add/edit/delete in the app
+// Default users — admin can add/edit/delete in the app
 const defaultUsers = [
-  { id:'u1', name:'Administrador',  username:'admin',   password:'Colfax2024!', role:'admin',     color:'#8e44ad', active:true },
-  { id:'u2', name:'Maria Camacho',  username:'Maria',   password:'Colfax2026',  role:'operador',  color:'#8e44ad', active:true },
-  { id:'u3', name:'Ricardo Romero', username:'Ricardo', password:'Colfax2026',  role:'operador',  color:'#e67e22', active:true },
-  { id:'u4', name:'Abidan Morales', username:'Abidan',  password:'Colfax2026',  role:'operador',  color:'#e67e22', active:true },
-  { id:'u5', name:'Visita',         username:'Visita',  password:'Visita26',    role:'visitante', color:'#c0392b', active:true },
+  { id:'u1', name:'Administrador', username:'admin',    password:'Colfax2024!', role:'admin',     color:'#8e44ad', active:true },
+  { id:'u2', name:'Operador 1',    username:'operador1', password:'Op1colfax',   role:'operador',  color:'#27ae60', active:true },
+  { id:'u3', name:'Operador 2',    username:'operador2', password:'Op2colfax',   role:'operador',  color:'#27ae60', active:true },
+  { id:'u4', name:'Visitante',     username:'visitante', password:'Ver2024',     role:'visitante', color:'#2980b9', active:true },
 ];
 
 function loadUsers(){
@@ -477,19 +501,22 @@ function saveUsers(){
 }
 
 let users = loadUsers();
-// Load users from Firestore before login so all devices share the same user list.
-// usersReady resolves once we know if Firestore has an updated list (or falls back to cache/defaults).
-let _resolveUsersReady;
-const usersReady = new Promise(resolve => { _resolveUsersReady = resolve; });
-db.collection('users').doc('list').get().then(doc=>{
-  if(doc.exists && doc.data().users && doc.data().users.length){
-    users = doc.data().users;
-    try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
-  } else {
-    db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users init error',e));
-  }
-  _resolveUsersReady();
-}).catch(e=>{ console.warn('FB users load error',e); _resolveUsersReady(); });
+// Load users from Firestore before login so all devices share the same user list
+(()=>{
+  const loginBtn = document.querySelector('.login-btn');
+  if(loginBtn){ loginBtn.disabled=true; loginBtn.textContent='Cargando...'; }
+  db.collection('users').doc('list').get().then(doc=>{
+    if(doc.exists && doc.data().users && doc.data().users.length){
+      users = doc.data().users;
+      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+    } else {
+      db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users init error',e));
+    }
+  }).catch(e=>console.warn('FB users load error',e))
+  .finally(()=>{
+    if(loginBtn){ loginBtn.disabled=false; loginBtn.textContent='Entrar'; }
+  });
+})();
 let currentUser = null; // {id, name, username, role, color}
 let sessionExpiry = 0;
 
@@ -503,30 +530,25 @@ function can(perm){ return currentUser && PERMS[currentUser.role]?.[perm]; }
 
 function initials(name){ return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 
-// ââ LOGIN ââ
+// ── LOGIN ──
 function doLogin(){
-  const btn = document.querySelector('.login-btn');
-  if(btn) { btn.disabled=true; btn.textContent='CARGANDO...'; }
-  usersReady.then(()=>{
-    if(btn) { btn.disabled=false; btn.textContent='INGRESAR'; }
-    const uval = document.getElementById('inp-user').value.trim().toLowerCase();
-    const pval = document.getElementById('inp-pass').value;
-    const errEl = document.getElementById('login-error');
-    const user = users.find(u => u.username.toLowerCase()===uval && u.password===pval && u.active);
-    if(!user){
-      errEl.classList.add('show');
-      document.getElementById('inp-pass').value='';
-      document.getElementById('inp-pass').classList.add('error');
-      setTimeout(()=>{ errEl.classList.remove('show'); document.getElementById('inp-pass').classList.remove('error'); }, 2500);
-      return;
-    }
-    currentUser = { id:user.id, name:user.name, username:user.username, role:user.role, color:user.color };
-    sessionExpiry = Date.now() + SESSION_MS;
-    try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser, expiry:sessionExpiry})); }catch(e){}
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='flex';
-    onLoginSuccess();
-  });
+  const uval = document.getElementById('inp-user').value.trim().toLowerCase();
+  const pval = document.getElementById('inp-pass').value;
+  const errEl = document.getElementById('login-error');
+  const user = users.find(u => u.username.toLowerCase()===uval && u.password===pval && u.active);
+  if(!user){
+    errEl.classList.add('show');
+    document.getElementById('inp-pass').value='';
+    document.getElementById('inp-pass').classList.add('error');
+    setTimeout(()=>{ errEl.classList.remove('show'); document.getElementById('inp-pass').classList.remove('error'); }, 2500);
+    return;
+  }
+  currentUser = { id:user.id, name:user.name, username:user.username, role:user.role, color:user.color };
+  sessionExpiry = Date.now() + SESSION_MS;
+  try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser, expiry:sessionExpiry})); }catch(e){}
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  onLoginSuccess();
 }
 
 function restoreSession(){
@@ -545,7 +567,7 @@ function restoreSession(){
 }
 
 function doLogout(){
-  if(!confirm('Â¿Cerrar sesiÃ³n?')) return;
+  if(!confirm('¿Cerrar sesión?')) return;
   currentUser=null; sessionExpiry=0;
   try{ localStorage.removeItem('fb-v4-session'); }catch(e){}
   document.getElementById('app').style.display='none';
@@ -554,11 +576,11 @@ function doLogout(){
   document.getElementById('inp-pass').value='';
 }
 
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 //  FIRESTORE SYNC
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 function initFirestoreSync(){
-  // Real-time listener â all users see bin changes instantly
+  // Real-time listener — all users see bin changes instantly
   db.collection('bins').onSnapshot(snapshot=>{
     let changed=false;
     snapshot.docChanges().forEach(change=>{
@@ -576,16 +598,7 @@ function initFirestoreSync(){
     }
   },err=>console.warn('FB listener error',err));
 
-  // Real-time users sync â admin changes propagate to all devices
-  db.collection('users').doc('list').onSnapshot(doc=>{
-    if(doc.exists && doc.data().users && doc.data().users.length){
-      users = doc.data().users;
-      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
-      if(document.getElementById('users-list')) renderUsersList();
-    }
-  },err=>console.warn('FB users listener error',err));
-
-  // Real-time users sync
+  // Real-time users sync — admin changes propagate to all devices
   db.collection('users').doc('list').onSnapshot(doc=>{
     if(doc.exists && doc.data().users && doc.data().users.length){
       users = doc.data().users;
@@ -597,7 +610,7 @@ function initFirestoreSync(){
   // Load bins from Firestore on first login
   db.collection('bins').get().then(snapshot=>{
     if(snapshot.empty){
-      // First time â upload default bins to Firestore
+      // First time — upload default bins to Firestore
       allBins.forEach(bin=>{
         db.collection('bins').doc('bin-'+bin.id).set(bin).catch(e=>console.warn(e));
       });
@@ -650,7 +663,7 @@ function onLoginSuccess(){
   const bch = document.getElementById('btn-clear-hist');
   if(bch) bch.style.display = can('canDeleteHist') ? 'block' : 'none';
 
-  sessionReadings=new Set(); sessionStart=null;
+  sessionReadings=new Set(); sessionStart=null; pendientes={};
   renderFilters();
   renderBins();
   switchTab('bins');
@@ -671,32 +684,32 @@ function updateSessionBar(){
   bar.className = 'session-bar' + (remaining < 600000 ? ' warn' : '');
 }
 
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 //  BIN DATA
-// ââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════
 const defaultBins = [
-  {id:1,  name:"Bin 1",  diet:"Gestation 4022222",cap:9, level:78,barn:"G1",   group:"GestaciÃ³n",tandemGroup:"G1",  notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:2,  name:"Bin 2",  diet:"Gestation 4022222",cap:9, level:61,barn:"G1",   group:"GestaciÃ³n",tandemGroup:"G1",  notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:3,  name:"Bin 3",  diet:"Gestation 4022222",cap:9, level:44,barn:"G2",   group:"GestaciÃ³n",tandemGroup:"G2",  notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:4,  name:"Bin 4",  diet:"Gestation 4022222",cap:9, level:17,barn:"G2",   group:"GestaciÃ³n",tandemGroup:"G2",  notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:5,  name:"Bin 5",  diet:"Gestation 4022222",cap:9, level:88,barn:"G3",   group:"GestaciÃ³n",tandemGroup:"G3",  notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:6,  name:"Bin 6",  diet:"Gestation 4022222",cap:9, level:53,barn:"G3",   group:"GestaciÃ³n",tandemGroup:"G3",  notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:7,  name:"Bin 7",  diet:"Gestation 4022222",cap:9, level:32,barn:"G4",   group:"GestaciÃ³n",tandemGroup:"G4",  notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:8,  name:"Bin 8",  diet:"Gestation 4022222",cap:9, level:11,barn:"G4",   group:"GestaciÃ³n",tandemGroup:"G4",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:1,  name:"Bin 1",  diet:"Gestation 4022222",cap:9, level:78,barn:"G1",   group:"Gestación",tandemGroup:"G1",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:2,  name:"Bin 2",  diet:"Gestation 4022222",cap:9, level:61,barn:"G1",   group:"Gestación",tandemGroup:"G1",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:3,  name:"Bin 3",  diet:"Gestation 4022222",cap:9, level:44,barn:"G2",   group:"Gestación",tandemGroup:"G2",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:4,  name:"Bin 4",  diet:"Gestation 4022222",cap:9, level:17,barn:"G2",   group:"Gestación",tandemGroup:"G2",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:5,  name:"Bin 5",  diet:"Gestation 4022222",cap:9, level:88,barn:"G3",   group:"Gestación",tandemGroup:"G3",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:6,  name:"Bin 6",  diet:"Gestation 4022222",cap:9, level:53,barn:"G3",   group:"Gestación",tandemGroup:"G3",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:7,  name:"Bin 7",  diet:"Gestation 4022222",cap:9, level:32,barn:"G4",   group:"Gestación",tandemGroup:"G4",  notes:"",isOpen:true,ts:null,savedBy:null},
+  {id:8,  name:"Bin 8",  diet:"Gestation 4022222",cap:9, level:11,barn:"G4",   group:"Gestación",tandemGroup:"G4",  notes:"",isOpen:true,ts:null,savedBy:null},
   {id:9,  name:"Bin 9",  diet:"Gestation 4022222",cap:6, level:67,barn:"B3/B4",group:"Breeding", tandemGroup:"B3B4",notes:"",isOpen:true,ts:null,savedBy:null},
   {id:10, name:"Bin 10", diet:"Gestation 4022222",cap:6, level:55,barn:"B3/B4",group:"Breeding", tandemGroup:"B3B4",notes:"",isOpen:true,ts:null,savedBy:null},
   {id:11, name:"Bin 11", diet:"Gestation 4022222",cap:6, level:48,barn:"B3/B4",group:"Breeding", tandemGroup:"B3B4",notes:"",isOpen:true,ts:null,savedBy:null},
   {id:12, name:"Bin 12", diet:"Gestation 4022222",cap:6, level:72,barn:"B1/B2",group:"Breeding", tandemGroup:"B1B2",notes:"",isOpen:true,ts:null,savedBy:null},
   {id:13, name:"Bin 13", diet:"Gestation 4022222",cap:6, level:26,barn:"B1/B2",group:"Breeding", tandemGroup:"B1B2",notes:"",isOpen:true,ts:null,savedBy:null},
   {id:14, name:"Bin 14", diet:"Gestation 4022222",cap:6, level:14,barn:"B1/B2",group:"Breeding", tandemGroup:"B1B2",notes:"",isOpen:true,ts:null,savedBy:null},
-  {id:15, name:"Bin 15", diet:"Lactation 4022252",cap:9, level:82,barn:"F1",   group:"LactaciÃ³n",tandemGroup:"F1",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
-  {id:16, name:"Bin 16", diet:"Lactation 4022252",cap:9, level:71,barn:"F1",   group:"LactaciÃ³n",tandemGroup:"F1",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
-  {id:17, name:"Bin 17", diet:"Lactation 4022252",cap:9, level:59,barn:"F2",   group:"LactaciÃ³n",tandemGroup:"F2",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
-  {id:18, name:"Bin 18", diet:"Lactation 4022252",cap:9, level:19,barn:"F2",   group:"LactaciÃ³n",tandemGroup:"F2",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
-  {id:19, name:"Bin 19", diet:"Lactation 4022252",cap:9, level:91,barn:"F3",   group:"LactaciÃ³n",tandemGroup:"F3",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
-  {id:20, name:"Bin 20", diet:"Lactation 4022252",cap:9, level:37,barn:"F3",   group:"LactaciÃ³n",tandemGroup:"F3",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
-  {id:21, name:"Bin 21", diet:"Lactation 4022252",cap:9, level:56,barn:"F4",   group:"LactaciÃ³n",tandemGroup:"F4",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
-  {id:22, name:"Bin 22", diet:"Lactation 4022252",cap:9, level:9, barn:"F4",   group:"LactaciÃ³n",tandemGroup:"F4",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:15, name:"Bin 15", diet:"Lactation 4022252",cap:9, level:82,barn:"F1",   group:"Lactación",tandemGroup:"F1",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:16, name:"Bin 16", diet:"Lactation 4022252",cap:9, level:71,barn:"F1",   group:"Lactación",tandemGroup:"F1",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:17, name:"Bin 17", diet:"Lactation 4022252",cap:9, level:59,barn:"F2",   group:"Lactación",tandemGroup:"F2",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:18, name:"Bin 18", diet:"Lactation 4022252",cap:9, level:19,barn:"F2",   group:"Lactación",tandemGroup:"F2",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:19, name:"Bin 19", diet:"Lactation 4022252",cap:9, level:91,barn:"F3",   group:"Lactación",tandemGroup:"F3",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:20, name:"Bin 20", diet:"Lactation 4022252",cap:9, level:37,barn:"F3",   group:"Lactación",tandemGroup:"F3",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:21, name:"Bin 21", diet:"Lactation 4022252",cap:9, level:56,barn:"F4",   group:"Lactación",tandemGroup:"F4",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
+  {id:22, name:"Bin 22", diet:"Lactation 4022252",cap:9, level:9, barn:"F4",   group:"Lactación",tandemGroup:"F4",  notes:"Pulmotil",isOpen:true,ts:null,savedBy:null},
 ];
 
 function loadBins(){try{const s=localStorage.getItem('fb-v4-bins');if(s)return JSON.parse(s);}catch(e){}return defaultBins.map(b=>({...b}))}
@@ -724,19 +737,30 @@ function saveOrderData(){
 let allBins=loadBins(), history=loadHistory(), orderTons=loadOrder();
 let expanded=null, activeFilter="Todos", currentTab='bins';
 let sessionReadings=new Set(), sessionStart=null;
-const filters=["Todos","GestaciÃ³n","Breeding","LactaciÃ³n","CrÃ­ticos","Cerrados"];
+let pendientes={}; // {binId: {level, notes}} — lecturas marcadas listas para guardar
+const filters=["Todos","Gestación","Breeding","Lactación","Críticos","Cerrados"];
 
-// ââ HELPERS ââ
+// ── HELPERS ──
 function col(p){return p>=20?'#27ae60':'#e67e22'}
 function dotCls(p){return p>=20?'sg':'sy'}
 function valCls(p){return p>=20?'cg':'cy'}
-function fmtTs(ts){if(!ts)return'â';const d=new Date(ts);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}
+function fmtTs(ts){if(!ts)return'—';const d=new Date(ts);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}
 function nowTs(){return new Date().toISOString()}
 
 function makeSVG(p,color,w,h,cap=null){
   const bt=h*0.12,bb=h*0.80,bh=bb-bt,fh=bh*p/100,fy=bb-fh;
   const lx=w*0.14,rx=w*0.86,uid='sv'+p+'w'+Math.round(w)+color.replace('#','');
-  return `<svg viewBox="0 0 ${w} ${h}" fill="none"><defs><clipPath id="${uid}"><rect x="${lx}" y="${bt}" width="${w*0.72}" height="${bh}" rx="2"/></clipPath></defs>
+  // Tonnage tick marks (only on expanded SVG where w>=100)
+  let ticks='';
+  if(cap && cap>0 && w>=100){
+    for(let t=1;t<cap;t++){
+      const ty=bb-(bh*t/cap);
+      const isHalf=(cap>=6 && t===Math.floor(cap/2));
+      ticks+=`<line x1="${rx}" y1="${ty}" x2="${rx+4}" y2="${ty}" stroke="#4e5f7a" stroke-width="${isHalf?1.5:0.8}"/>`;
+      ticks+=`<text x="${rx+6}" y="${ty+2.5}" font-size="5.5" fill="${isHalf?'#7a8fa8':'#4e5f7a'}" font-family="monospace">${t}t</text>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${w+(cap&&w>=100?18:0)} ${h}" fill="none"><defs><clipPath id="${uid}"><rect x="${lx}" y="${bt}" width="${w*0.72}" height="${bh}" rx="2"/></clipPath></defs>
     <path d="M${w*.5} 3 L${rx+2} ${bt} L${lx-2} ${bt} Z" fill="#242d42"/>
     <rect x="${lx}" y="${bt}" width="${w*0.72}" height="${bh}" rx="2" fill="#111520" stroke="#242d42" stroke-width="1"/>
     <rect x="${lx}" y="${fy}" width="${w*0.72}" height="${fh}" fill="${color}" opacity="0.88" clip-path="url(#${uid})"/>
@@ -745,15 +769,15 @@ function makeSVG(p,color,w,h,cap=null){
     <path d="M${lx} ${bb} L${w*.5} ${h*0.95} L${rx} ${bb} Z" fill="${p>0?color:'#111520'}" opacity="${p>0?'0.85':'1'}" stroke="${p>0?color:'#242d42'}" stroke-width="1"/>
     <line x1="${w*0.30}" y1="${h*0.93}" x2="${w*0.24}" y2="${h}" stroke="${p>0?color:'#242d42'}" stroke-width="1.5" opacity="${p>0?'0.6':'1'}"/>
     <line x1="${w*0.70}" y1="${h*0.93}" x2="${w*0.76}" y2="${h}" stroke="${p>0?color:'#242d42'}" stroke-width="1.5" opacity="${p>0?'0.6':'1'}"/>
-    ${(()=>{let t='';if(cap&&cap>0&&w>=100){const bt2=h*0.12,bb2=h*0.80,bh2=bb2-bt2,rx2=w*0.86;for(let i=1;i<cap;i++){const ty=bb2-(bh2*i/cap);const isH=(cap>=6&&i===Math.floor(cap/2));t+=`<line x1="${rx2}" y1="${ty}" x2="${rx2+4}" y2="${ty}" stroke="#4e5f7a" stroke-width="${isH?1.5:0.8}"/>`;t+=`<text x="${rx2+6}" y="${ty+2.5}" font-size="5.5" fill="${isH?'#7a8fa8':'#4e5f7a'}" font-family="monospace">${i}t</text>`;}}return t;})()}
+    ${ticks}
   </svg>`;
 }
 
-// ââ SUMMARY ââ
+// ── SUMMARY ──
 function getVisible(){
   const sorted=[...allBins].sort((a,b)=>a.id-b.id);
   if(activeFilter==="Todos")    return sorted;
-  if(activeFilter==="CrÃ­ticos") return sorted.filter(b=>b.level<20);
+  if(activeFilter==="Críticos") return sorted.filter(b=>b.level<20);
   if(activeFilter==="Cerrados") return sorted.filter(b=>!b.isOpen);
   return sorted.filter(b=>b.group===activeFilter);
 }
@@ -774,20 +798,20 @@ function renderFilters(){
     t.className='ftag'+(f===activeFilter?' on':'');
     const crit=allBins.filter(b=>b.level<20).length;
     const closed=allBins.filter(b=>!b.isOpen).length;
-    t.textContent=f==='CrÃ­ticos'?`CrÃ­ticos (${crit})`:f==='Cerrados'?`Cerrados (${closed})`:f;
+    t.textContent=f==='Críticos'?`Críticos (${crit})`:f==='Cerrados'?`Cerrados (${closed})`:f;
     t.onclick=()=>{activeFilter=f;expanded=null;renderFilters();renderBins()};
     fr.appendChild(t);
   });
 }
 
-// ââ SLIDE ââ
+// ── SLIDE ──
 function onSlide(binId,val){
   if(!can('canSave')) return;
   const bin=allBins.find(b=>b.id===binId);if(!bin)return;
   bin.level=parseInt(val);
   const color=col(bin.level);
   const esvg=document.getElementById('esvg-'+binId);
-  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154,bin.cap||bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
+  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154,bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
   const ep=document.getElementById('epb-'+binId);if(ep){ep.textContent=bin.level+'%';ep.className='exp-pct-big '+valCls(bin.level)}
   const inv=(bin.cap*bin.level/100).toFixed(2);
   const et=document.getElementById('eton-'+binId);if(et) et.textContent=inv+' ton de '+bin.cap;
@@ -805,7 +829,7 @@ function onSlide(binId,val){
   updateSummary(getVisible());
 }
 
-// ââ TOGGLE STATUS ââ
+// ── TOGGLE STATUS ──
 function toggleStatus(binId, isOpen){
   if(!can('canToggle')){ showToast('Sin permiso para cambiar estado','err'); return; }
   const bin=allBins.find(b=>b.id===binId);if(!bin)return;
@@ -821,10 +845,10 @@ function toggleStatus(binId, isOpen){
   if(oBtn) oBtn.className='t-opt open-opt'+(isOpen?' active':'');
   if(cBtn) cBtn.className='t-opt close-opt'+(!isOpen?' active':'');
   updateSummary(getVisible());renderFilters();
-  showToast(bin.name+' â '+(isOpen?'ð¢ ABIERTO':'ð´ CERRADO'));
+  showToast(bin.name+' — '+(isOpen?'🟢 ABIERTO':'🔴 CERRADO'));
 }
 
-// ââ SAVE LEVEL ââ
+// ── SAVE LEVEL ──
 function saveLevel(binId){
   if(!can('canSave')){ showToast('Sin permiso para guardar lecturas','err'); return; }
   const bin=allBins.find(b=>b.id===binId);if(!bin)return;
@@ -837,19 +861,58 @@ function saveLevel(binId){
     isOpen:bin.isOpen,savedBy:currentUser.name,userRole:currentUser.role});
   if(history.length>1000) history=history.slice(0,1000);
   saveSingleBin(bin);saveHistData(history[0]);
-  showToast('â '+bin.name+' â '+bin.level+'% guardado');
+  showToast('✓ '+bin.name+' — '+bin.level+'% guardado');
   sessionReadings.add(binId);
   if(!sessionStart) sessionStart=new Date();
   updateEnviarBtn();
   renderFilters();
   const card=document.querySelector(`[data-binid="${binId}"]`);
   if(card){
-    const tsEl=card.querySelector('.bin-ts');if(tsEl) tsEl.textContent='â± '+fmtTs(bin.ts);
+    const tsEl=card.querySelector('.bin-ts');if(tsEl) tsEl.textContent='⏱ '+fmtTs(bin.ts);
     const whoEl=card.querySelector('.bin-who');if(whoEl) whoEl.textContent='por '+currentUser.name;
   }
 }
 
-// ââ BUILD CARD HTML ââ
+// ── FULLSCREEN BIN DETAIL ──
+function openBinFS(binId){
+  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
+  const displayBin=pendientes[binId]?{...bin,level:pendientes[binId].level,notes:pendientes[binId].notes}:bin;
+  document.getElementById('fs-bin-title').textContent=bin.name;
+  document.getElementById('fs-bin-barn').textContent=bin.barn;
+  document.getElementById('fs-bin-body').innerHTML=buildExpandHTML(displayBin);
+  const eb=document.getElementById('fs-bin-body').querySelector('.expand-body');
+  if(eb){eb.style.borderTop='none';eb.style.paddingTop='0';eb.style.marginTop='0';}
+  document.getElementById('fs-bin-overlay').classList.add('show');
+}
+function closeBinFS(){
+  document.getElementById('fs-bin-overlay').classList.remove('show');
+}
+// ── MARCAR BIN COMO LISTO (sin guardar aún) ──
+function marcarListo(binId){
+  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
+  const sliderEl=document.getElementById('vsl-'+binId);
+  const notesEl=document.getElementById('notes-'+binId);
+  const level=sliderEl?parseInt(sliderEl.value):bin.level;
+  const notes=notesEl?notesEl.value.trim():bin.notes;
+  bin.level=level;bin.notes=notes;
+  pendientes[binId]={level,notes};
+  if(!sessionStart)sessionStart=new Date();
+  showToast('✓ '+bin.name+' — lista para guardar');
+  closeBinFS();
+  renderBins();renderFilters();updateEnviarBtn();
+}
+function saveBinData(binId,level,notes){
+  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
+  const prev=bin.prevLevel!=null?bin.prevLevel:bin.level;
+  bin.level=level;bin.notes=notes;bin.prevLevel=level;bin.ts=nowTs();bin.savedBy=currentUser.name;
+  history.unshift({ts:bin.ts,binId:bin.id,binName:bin.name,barn:bin.barn,group:bin.group,
+    diet:bin.diet,cap:bin.cap,level:bin.level,prevLevel:prev,notes:bin.notes,
+    isOpen:bin.isOpen,savedBy:currentUser.name,userRole:currentUser.role});
+  if(history.length>1000)history=history.slice(0,1000);
+  saveSingleBin(bin);saveHistData(history[0]);
+}
+
+// ── BUILD CARD HTML ──
 function buildCardHTML(bin){
   const color=col(bin.level);const inv=(bin.cap*bin.level/100).toFixed(1);
   return `<div class="bin-row">
@@ -858,7 +921,7 @@ function buildCardHTML(bin){
     <div class="bin-mid">
       <div class="bin-name">${bin.name}<span class="barn-tag">${bin.barn}</span></div>
       <div class="bin-diet">${bin.diet}</div>
-      <div class="bin-ts">${bin.ts?'â± '+fmtTs(bin.ts):'Sin lecturas'}</div>
+      <div class="bin-ts">${bin.ts?'⏱ '+fmtTs(bin.ts):'Sin lecturas'}</div>
       ${bin.savedBy?`<div class="bin-who">por ${bin.savedBy}</div>`:''}
       ${bin.notes?`<div class="badges"><span class="nbadge">${bin.notes}</span></div>`:''}
     </div>
@@ -867,6 +930,7 @@ function buildCardHTML(bin){
       <div class="sdot ${dotCls(bin.level)}"></div>
       <div class="bin-ton">${inv}t</div>
     </div>
+    ${pendientes[bin.id]?'<div class="check-badge">✓</div>':''}
   </div>`;
 }
 
@@ -874,7 +938,7 @@ function buildExpandHTML(bin){
   const color=col(bin.level);const inv=(bin.cap*bin.level/100).toFixed(2);
   const ro=!can('canSave');
   return `<div class="expand-body">
-    ${ro?`<div class="readonly-banner">ð Modo solo lectura â ${currentUser.role}</div>`:''}
+    ${ro?`<div class="readonly-banner">👁 Modo solo lectura — ${currentUser.role}</div>`:''}
     <div class="level-control">
       <div class="v-slider-col">
         <div class="v-slider-lbl">100%</div>
@@ -887,7 +951,7 @@ function buildExpandHTML(bin){
       </div>
       <div class="exp-svg-wrap">
         <div class="exp-svg" id="esvg-${bin.id}">
-          ${makeSVG(bin.level,color,110,154)}
+          ${makeSVG(bin.level,color,110,154,bin.cap)}
           <div class="exp-pct-lbl">${bin.level}%</div>
         </div>
         <div class="exp-pct-big ${valCls(bin.level)}" id="epb-${bin.id}">${bin.level}%</div>
@@ -896,9 +960,9 @@ function buildExpandHTML(bin){
       <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-width:0">
         <div class="toggle-btn" style="width:100%">
           <div class="t-opt open-opt${bin.isOpen?' active':''}${!can('canToggle')?' disabled-opt':''}" id="topen-${bin.id}" style="flex:1;text-align:center"
-            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},true)`:''}">ð¢ ABIERTO</div>
+            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},true)`:''}">🟢 ABIERTO</div>
           <div class="t-opt close-opt${!bin.isOpen?' active':''}${!can('canToggle')?' disabled-opt':''}" id="tclose-${bin.id}" style="flex:1;text-align:center"
-            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},false)`:''}">ð´ CERRADO</div>
+            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},false)`:''}">🔴 CERRADO</div>
         </div>
         <div class="mi" style="text-align:center"><div class="lbl">Capacidad</div><div class="val">${bin.cap} ton</div></div>
         <div class="mi" style="text-align:center"><div class="lbl">Inventario</div><div class="val">${inv} t</div></div>
@@ -907,34 +971,39 @@ function buildExpandHTML(bin){
       </div>
     </div>
     <div class="meta-grid">
-      <div class="mi full"><div class="lbl">Ãltima lectura</div><div class="val">${fmtTs(bin.ts)}${bin.savedBy?' Â· '+bin.savedBy:''}</div></div>
+      <div class="mi full"><div class="lbl">Última lectura</div><div class="val">${fmtTs(bin.ts)}${bin.savedBy?' · '+bin.savedBy:''}</div></div>
     </div>
     <div class="notes-row">
       <div class="notes-lbl">Notas</div>
-      <textarea class="notes-input" id="notes-${bin.id}" placeholder="Observacionesâ¦" ${ro?'disabled':''}>${bin.notes||''}</textarea>
+      <textarea class="notes-input" id="notes-${bin.id}" placeholder="Observaciones…" ${ro?'disabled':''}>${bin.notes||''}</textarea>
     </div>
-    ${!ro?`<button class="save-btn" onclick="event.stopPropagation();saveLevel(${bin.id})">GUARDAR LECTURA</button>`:''}
+    ${!ro?`
+      <button class="btn-listo ${pendientes[bin.id]?'ya-listo':'pendiente-btn'}" onclick="event.stopPropagation();marcarListo(${bin.id})">
+        ${pendientes[bin.id]?'✓ Lectura ingresada — editar':'✓ MARCAR COMO LISTA'}
+      </button>
+      <div class="aviso-ronda">Al terminar todos los bins, presiona <strong>GUARDAR RONDA</strong> desde la lista</div>
+    `:''}
   </div>`;
 }
 
-// ââ TANDEM DEFINITIONS â fixed numeric order 1â22 ââ
+// ── TANDEM DEFINITIONS — fixed numeric order 1→22 ──
 const TANDEM_DEFS=[
-  {barn:'G1',    ids:[1,2],       group:'GestaciÃ³n'},
-  {barn:'G2',    ids:[3,4],       group:'GestaciÃ³n'},
-  {barn:'G3',    ids:[5,6],       group:'GestaciÃ³n'},
-  {barn:'G4',    ids:[7,8],       group:'GestaciÃ³n'},
+  {barn:'G1',    ids:[1,2],       group:'Gestación'},
+  {barn:'G2',    ids:[3,4],       group:'Gestación'},
+  {barn:'G3',    ids:[5,6],       group:'Gestación'},
+  {barn:'G4',    ids:[7,8],       group:'Gestación'},
   {barn:'B3/B4', ids:[9,10,11],   group:'Breeding'},
   {barn:'B1/B2', ids:[12,13,14],  group:'Breeding'},
-  {barn:'F1',    ids:[15,16],     group:'LactaciÃ³n'},
-  {barn:'F2',    ids:[17,18],     group:'LactaciÃ³n'},
-  {barn:'F3',    ids:[19,20],     group:'LactaciÃ³n'},
-  {barn:'F4',    ids:[21,22],     group:'LactaciÃ³n'},
+  {barn:'F1',    ids:[15,16],     group:'Lactación'},
+  {barn:'F2',    ids:[17,18],     group:'Lactación'},
+  {barn:'F3',    ids:[19,20],     group:'Lactación'},
+  {barn:'F4',    ids:[21,22],     group:'Lactación'},
 ];
 
-// ââ RENDER BINS â always all 22 in numeric order ââ
+// ── RENDER BINS — always all 22 in numeric order ──
 function renderBins(){
   const list=document.getElementById('bins-list');list.innerHTML='';
-  // Always sort 1â22 first
+  // Always sort 1→22 first
   const sorted=[...allBins].sort((a,b)=>a.id-b.id);
   const visibleIds=new Set(getVisible().map(b=>b.id));
   const binById=Object.fromEntries(sorted.map(b=>[b.id,b]));
@@ -950,7 +1019,7 @@ function renderBins(){
     if(activeFilter==='Todos'&&def.group!==lastGroup){
       lastGroup=def.group;
       const gh=document.createElement('div');gh.className='group-hdr';
-      const desc=def.group==='GestaciÃ³n'?'Bins 1â8 Â· G1âG4':def.group==='Breeding'?'Bins 9â14 Â· B1/B2, B3/B4':'Bins 15â22 Â· F1âF4';
+      const desc=def.group==='Gestación'?'Bins 1–8 · G1–G4':def.group==='Breeding'?'Bins 9–14 · B1/B2, B3/B4':'Bins 15–22 · F1–F4';
       gh.innerHTML=`<span>${def.group}</span><span>${desc}</span>`;
       list.appendChild(gh);
     }
@@ -965,7 +1034,7 @@ function renderBins(){
     if(groupBins.length>1){
       // Render as tandem group box
       const tg=document.createElement('div');tg.className='tandem-group';
-      tg.innerHTML=`<div class="tandem-label">Bodega ${def.barn} â ${groupBins.map(b=>b.name).join(' + ')}</div>`;
+      tg.innerHTML=`<div class="tandem-label">Bodega ${def.barn} — ${groupBins.map(b=>b.name).join(' + ')}</div>`;
       groupBins.forEach(b=>tg.appendChild(createBinCard(b)));
       list.appendChild(tg);
     } else {
@@ -975,20 +1044,18 @@ function renderBins(){
 }
 
 function createBinCard(bin){
-  const isOpen=expanded===bin.id;
   const card=document.createElement('div');
-  card.className='bin-card'+(isOpen?' open':'')+(bin.isOpen?'':' closed-bin');
+  card.className='bin-card'+(bin.isOpen?'':' closed-bin');
   card.setAttribute('data-binid',bin.id);
-  card.innerHTML=buildCardHTML(bin)+(isOpen?buildExpandHTML(bin):'');
+  card.innerHTML=buildCardHTML(bin);
   card.addEventListener('click',(e)=>{
     if(e.target.closest('input,button,textarea,select'))return;
-    expanded=(isOpen?null:bin.id);renderBins();
-    if(!isOpen) setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+    openBinFS(bin.id);
   });
   return card;
 }
 
-// ââ LECTURAS SUB-TABS ââ
+// ── LECTURAS SUB-TABS ──
 function switchLecturasSub(sub){
   document.getElementById('lview-resumen').style.display = sub==='resumen'?'flex':'none';
   document.getElementById('lview-historial').style.display = sub==='historial'?'flex':'none';
@@ -998,7 +1065,7 @@ function switchLecturasSub(sub){
   if(sub==='historial') renderLecturas();
 }
 
-// ââ RESUMEN â nivel actual de los 22 bins en orden numÃ©rico ââ
+// ── RESUMEN — nivel actual de los 22 bins en orden numérico ──
 function renderResumen(){
   const wrap=document.getElementById('resumen-wrap');
   if(!wrap) return;
@@ -1010,7 +1077,7 @@ function renderResumen(){
   const crit=sorted.filter(b=>b.level<20).length;
   const closed=sorted.filter(b=>!b.isOpen).length;
 
-  // ââ Summary bar ââ
+  // ── Summary bar ──
   let html=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;text-align:center">
       <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Bins</div>
@@ -1021,7 +1088,7 @@ function renderResumen(){
       <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:${col(avgPct)}">${avgPct}%</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;text-align:center">
-      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">CrÃ­ticos</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Críticos</div>
       <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:var(--red)">${crit}</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;text-align:center">
@@ -1030,7 +1097,7 @@ function renderResumen(){
     </div>
   </div>`;
 
-  // ââ Group headers + compact row per bin ââ
+  // ── Group headers + compact row per bin ──
   let lastGrp='';
   sorted.forEach(bin=>{
     const color=col(bin.level);
@@ -1040,7 +1107,7 @@ function renderResumen(){
     // Group header
     if(bin.group!==lastGrp){
       lastGrp=bin.group;
-      const desc=lastGrp==='GestaciÃ³n'?'Bins 1â8':lastGrp==='Breeding'?'Bins 9â14':'Bins 15â22';
+      const desc=lastGrp==='Gestación'?'Bins 1–8':lastGrp==='Breeding'?'Bins 9–14':'Bins 15–22';
       html+=`<div style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;padding:10px 2px 4px;border-bottom:.5px solid var(--border);margin-bottom:5px;display:flex;justify-content:space-between">
         <span>${lastGrp}</span><span style="color:var(--muted)">${desc}</span>
       </div>`;
@@ -1076,7 +1143,7 @@ function renderResumen(){
       <!-- Timestamp -->
       <div style="text-align:right;flex-shrink:0;min-width:58px">
         ${bin.ts
-          ?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted2)">â± ${fmtTs(bin.ts)}</div>
+          ?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted2)">⏱ ${fmtTs(bin.ts)}</div>
              ${bin.savedBy?`<div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${bin.savedBy}</div>`:''}` 
           :`<div style="font-family:var(--mono);font-size:8px;color:var(--muted)">Sin lecturas</div>`}
         <div style="font-family:var(--mono);font-size:7px;color:${bin.isOpen?'var(--green)':'var(--red)'};margin-top:2px">${bin.isOpen?'Abierto':'Cerrado'}</div>
@@ -1084,9 +1151,9 @@ function renderResumen(){
     </div>`;
   });
 
-  // ââ Totals footer ââ
+  // ── Totals footer ──
   html+=`<div style="background:var(--green-dim);border:1px solid var(--green);border-radius:8px;padding:10px 12px;margin-top:4px;display:flex;flex-direction:column;gap:5px">
-    <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES â 22 BINS</div>
+    <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES — 22 BINS</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 10px">
       <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">CAPACIDAD TOTAL</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)">${totalCap.toFixed(0)} ton</div></div>
@@ -1102,14 +1169,14 @@ function renderResumen(){
   wrap.innerHTML=html;
 }
 
-// ââ EXPORT RESUMEN CSV (los 22 bins actuales) ââ
+// ── EXPORT RESUMEN CSV (los 22 bins actuales) ──
 function exportResumenCSV(){
   const sorted=[...allBins].sort((a,b)=>a.id-b.id);
-  const rows=[['Bin','Bodega','Grupo','Dieta','Capacidad(ton)','Nivel%','Inventario(ton)','Espacio(ton)','Estado','Notas','Ãltima lectura','Guardado por']];
+  const rows=[['Bin','Bodega','Grupo','Dieta','Capacidad(ton)','Nivel%','Inventario(ton)','Espacio(ton)','Estado','Notas','Última lectura','Guardado por']];
   sorted.forEach(b=>{
     const inv=(b.cap*b.level/100).toFixed(2);
     const space=Math.max(0,b.cap-b.cap*b.level/100).toFixed(2);
-    rows.push([b.name,b.barn,b.group,b.diet,b.cap,b.level,inv,space,b.isOpen?'Abierto':'Cerrado',b.notes||'',b.ts?fmtTs(b.ts):'â',b.savedBy||'â']);
+    rows.push([b.name,b.barn,b.group,b.diet,b.cap,b.level,inv,space,b.isOpen?'Abierto':'Cerrado',b.notes||'',b.ts?fmtTs(b.ts):'—',b.savedBy||'—']);
   });
   const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1120,15 +1187,15 @@ function exportResumenCSV(){
   showToast('CSV de resumen descargado');
 }
 
-// ââ LECTURAS TABLE ââ
+// ── LECTURAS TABLE ──
 function renderLecturas(){
   const wrap=document.getElementById('lecturas-wrap');
-  if(!history.length){wrap.innerHTML='<div class="tbl-empty">Sin lecturas guardadas aÃºn.</div>';return}
-  let html=`<table><thead><tr><th>Bin</th><th>Fecha/Hora</th><th>Niv.</th><th>Î</th><th>Ton</th><th>Estado</th><th>Usuario</th></tr></thead><tbody>`;
+  if(!history.length){wrap.innerHTML='<div class="tbl-empty">Sin lecturas guardadas aún.</div>';return}
+  let html=`<table><thead><tr><th>Bin</th><th>Fecha/Hora</th><th>Niv.</th><th>Δ</th><th>Ton</th><th>Estado</th><th>Usuario</th></tr></thead><tbody>`;
   history.forEach(h=>{
     const color=col(h.level);
     const delta=h.level-(h.prevLevel||h.level);
-    const deltaStr=delta>0?`+${delta}%`:delta<0?`${delta}%`:'â';
+    const deltaStr=delta>0?`+${delta}%`:delta<0?`${delta}%`:'—';
     const deltaCol=delta>0?'var(--green)':delta<0?'var(--red)':'var(--muted)';
     const inv=(h.cap*h.level/100).toFixed(1);
     html+=`<tr>
@@ -1138,8 +1205,8 @@ function renderLecturas(){
       <td style="color:${color};font-weight:600">${h.level}%</td>
       <td style="color:${deltaCol};font-weight:600">${deltaStr}</td>
       <td class="td-muted">${inv}t</td>
-      <td>${h.isOpen!==false?'<span class="td-status-open">â Abierto</span>':'<span class="td-status-closed">â Cerrado</span>'}</td>
-      <td class="td-muted" style="white-space:nowrap">${h.savedBy||'â'}</td>
+      <td>${h.isOpen!==false?'<span class="td-status-open">● Abierto</span>':'<span class="td-status-closed">● Cerrado</span>'}</td>
+      <td class="td-muted" style="white-space:nowrap">${h.savedBy||'—'}</td>
     </tr>`;
   });
   html+='</tbody></table>';
@@ -1147,7 +1214,7 @@ function renderLecturas(){
 }
 function clearHistory(){
   if(!can('canDeleteHist')){showToast('Solo el admin puede eliminar historial','err');return}
-  if(!confirm('Â¿Eliminar todo el historial?'))return;
+  if(!confirm('¿Eliminar todo el historial?'))return;
   history=[];saveHistData();renderLecturas();showToast('Historial eliminado');
 }
 function exportCSV(){
@@ -1168,7 +1235,7 @@ function exportCSV(){
   showToast('CSV descargado');
 }
 
-// ââ ORDER â sort bins 1â22 ââ
+// ── ORDER — sort bins 1→22 ──
 function renderOrder(){
   const container=document.getElementById('order-list');container.innerHTML='';
   const ro=!can('canOrder');
@@ -1183,7 +1250,7 @@ function renderOrder(){
       <div style="flex:1;min-width:0">
         <div class="order-bin-name">${bin.name} <span style="font-family:var(--mono);font-size:8px;color:var(--muted2)">${bin.barn}</span></div>
         <div class="order-bin-meta">${bin.diet}</div>
-        <div class="order-bin-meta">Actual: ${inv}t/${bin.cap}t (${bin.level}%) Â· Espacio: <span style="color:var(--yellow)">${needed}t</span></div>
+        <div class="order-bin-meta">Actual: ${inv}t/${bin.cap}t (${bin.level}%) · Espacio: <span style="color:var(--yellow)">${needed}t</span></div>
       </div>
       <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
         <input class="order-input" type="number" min="0" max="${bin.cap}" step="0.5"
@@ -1197,7 +1264,7 @@ function renderOrder(){
   updateOrderSummary();
 }
 
-// ââ COMPARATIVA ââ
+// ── COMPARATIVA ──
 function renderComparativa(){
   const scroll=document.getElementById('comparativa-scroll');
   scroll.innerHTML='';
@@ -1213,7 +1280,7 @@ function renderComparativa(){
   const lowAfter=sorted.filter(b=>{const inv=b.cap*b.level/100;const after=Math.min(100,Math.round((inv+(orderTons[b.id]||0))/b.cap*100));return (orderTons[b.id]||0)>0&&after<80;}).length;
   const noOrder=sorted.filter(b=>!(orderTons[b.id]>0)).length;
 
-  // ââ Header ââ
+  // ── Header ──
   const hdr=document.createElement('div');
   hdr.style.cssText='background:var(--s1);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0';
   hdr.innerHTML=`
@@ -1227,7 +1294,7 @@ function renderComparativa(){
     </div>`;
   scroll.appendChild(hdr);
 
-  // ââ Global stat bar ââ
+  // ── Global stat bar ──
   const statBar=document.createElement('div');
   statBar.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 10px 0;flex-shrink:0';
   statBar.innerHTML=`
@@ -1249,13 +1316,13 @@ function renderComparativa(){
   if(overfill>0||lowAfter>0||noOrder>0){
     const chips=document.createElement('div');
     chips.style.cssText='display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px';
-    if(overfill>0) chips.innerHTML+=`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">â  ${overfill} sobrellenado${overfill>1?'s':''}</span>`;
-    if(lowAfter>0) chips.innerHTML+=`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">â ${lowAfter} &lt;80% post-entrega</span>`;
-    if(noOrder>0)  chips.innerHTML+=`<span style="background:rgba(78,95,122,0.15);border:0.5px solid var(--border);color:var(--muted2);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">â ${noOrder} sin pedir</span>`;
+    if(overfill>0) chips.innerHTML+=`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">⚠ ${overfill} sobrellenado${overfill>1?'s':''}</span>`;
+    if(lowAfter>0) chips.innerHTML+=`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">↑ ${lowAfter} &lt;80% post-entrega</span>`;
+    if(noOrder>0)  chips.innerHTML+=`<span style="background:rgba(78,95,122,0.15);border:0.5px solid var(--border);color:var(--muted2);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">— ${noOrder} sin pedir</span>`;
     scroll.appendChild(chips);
   }
 
-  // ââ Per-bin rows via TANDEM_DEFS ââ
+  // ── Per-bin rows via TANDEM_DEFS ──
   const binById=Object.fromEntries(sorted.map(b=>[b.id,b]));
   const innerScroll=document.createElement('div');
   innerScroll.style.cssText='flex:1;overflow-y:auto;padding:6px 10px 16px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch';
@@ -1289,7 +1356,7 @@ function renderComparativa(){
       wrapper.style.cssText=`border:1px solid rgba(41,128,185,0.4);border-radius:10px;overflow:hidden;margin-bottom:0`;
       const tlabel=document.createElement('div');
       tlabel.style.cssText='background:rgba(41,128,185,0.07);border-bottom:0.5px solid rgba(41,128,185,0.2);padding:5px 12px;font-family:var(--mono);font-size:8px;color:var(--blue);display:flex;gap:5px;align-items:center';
-      tlabel.innerHTML=`<span>â</span> Bodega ${def.barn}`;
+      tlabel.innerHTML=`<span>⇄</span> Bodega ${def.barn}`;
       wrapper.appendChild(tlabel);
     }
 
@@ -1359,13 +1426,13 @@ function renderComparativa(){
             <span>Post-entrega</span><span>${afterPct}%</span>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">
-            ${isOverfill?`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">â  Sobrellenado +${delta.toFixed(2)}t</span>`:''}
-            ${isLow?`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">â QuedarÃ¡ al ${afterPct}%</span>`:''}
-            ${!isOverfill&&!isLow?`<span style="background:rgba(39,174,96,0.12);border:0.5px solid rgba(39,174,96,0.4);color:var(--green);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">â OK post-entrega</span>`:''}
+            ${isOverfill?`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">⚠ Sobrellenado +${delta.toFixed(2)}t</span>`:''}
+            ${isLow?`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">↑ Quedará al ${afterPct}%</span>`:''}
+            ${!isOverfill&&!isLow?`<span style="background:rgba(39,174,96,0.12);border:0.5px solid rgba(39,174,96,0.4);color:var(--green);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">✓ OK post-entrega</span>`:''}
           </div>
         </div>`:`
         <div style="background:rgba(78,95,122,0.07);border:0.5px solid rgba(78,95,122,0.2);border-radius:5px;padding:7px 10px;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--muted)">
-          â Sin pedido registrado para este bin
+          — Sin pedido registrado para este bin
         </div>`}`;
 
       wrapper.appendChild(row);
@@ -1374,11 +1441,11 @@ function renderComparativa(){
     innerScroll.appendChild(wrapper);
   });
 
-  // ââ Grand total footer ââ
+  // ── Grand total footer ──
   const footer=document.createElement('div');
   footer.style.cssText='background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:7px;margin-top:4px';
   footer.innerHTML=`
-    <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES â 22 BINS</div>
+    <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES — 22 BINS</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px">
       <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">CAPACIDAD TOTAL</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)">${totalCap.toFixed(0)} t</div></div>
@@ -1403,26 +1470,40 @@ function renderComparativa(){
   scroll.appendChild(innerScroll);
 }
 
-// ââ ENVIAR RONDA ââ
+// ── ENVIAR RONDA ──
 function updateEnviarBtn(){
   const btn=document.getElementById('btn-enviar-ronda');
-  if(!btn) return;
-  if(sessionReadings.size>0){
+  if(!btn)return;
+  const n=Object.keys(pendientes).length;
+  if(n>0){
     btn.style.display='flex';
-    btn.textContent='â Enviar ronda ('+sessionReadings.size+' bins)';
-  } else { btn.style.display='none'; }
+    btn.style.background='linear-gradient(135deg,var(--green),#1e8449)';
+    btn.style.boxShadow='0 2px 12px rgba(39,174,96,0.4)';
+    btn.textContent='✉ GUARDAR RONDA ('+n+' bin'+(n===1?'':'s')+')';
+  }else{
+    btn.style.display='none';
+  }
 }
 function enviarRonda(){
-  if(!can('canSave')){showToast('Sin permiso','err');return}
-  if(!sessionReadings.size){showToast('No hay lecturas en esta sesiÃ³n');return}
-  const binsRead=allBins.filter(b=>sessionReadings.has(b.id));
-  const summary=binsRead.map(b=>({id:b.id,name:b.name,barn:b.barn,level:b.level,ts:b.ts}));
-  const ronda={ts:new Date().toISOString(),user:currentUser.name,role:currentUser.role,binCount:sessionReadings.size,sessionStart:sessionStart?sessionStart.toISOString():null,bins:summary};
-  db.collection('rondas').add(ronda).then(()=>{showToast('â Ronda enviada â '+sessionReadings.size+' bins registrados');}).catch(e=>{showToast('Error al enviar ronda','err');console.warn(e);});
-  sessionReadings=new Set();sessionStart=null;updateEnviarBtn();
+  if(!can('canSave')){ showToast('Sin permiso','err'); return; }
+  const ids=Object.keys(pendientes).map(Number);
+  if(!ids.length){ showToast('No hay lecturas pendientes'); return; }
+  if(!sessionStart)sessionStart=new Date();
+  ids.forEach(id=>{ const d=pendientes[id]; saveBinData(id,d.level,d.notes); });
+  const summary=allBins.filter(b=>ids.includes(b.id)).map(b=>({id:b.id,name:b.name,barn:b.barn,level:b.level,ts:b.ts}));
+  const ronda={
+    ts:new Date().toISOString(),user:currentUser.name,role:currentUser.role,
+    binCount:ids.length,sessionStart:sessionStart?sessionStart.toISOString():null,bins:summary
+  };
+  db.collection('rondas').add(ronda)
+    .then(()=>{ showToast('✓ Ronda guardada — '+ids.length+' lectura'+(ids.length===1?'':'s')+' registradas'); })
+    .catch(e=>{ showToast('Error al guardar ronda','err'); console.warn(e); });
+  pendientes={};sessionStart=null;sessionReadings=new Set();
+  updateEnviarBtn();
+  renderBins();
 }
 
-// ââ TABS ââ
+// ── TABS ──
 function switchTab(tab){
   currentTab=tab;
   ['bins','lecturas','orden','comparativa','admin'].forEach(t=>{
@@ -1443,7 +1524,7 @@ function updateOrderSummary(){
   if(!entries.length){box.style.display='none';return}
   box.style.display='flex';
   const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);
-  let html=`<div class="order-sum-title">Resumen de Orden â ${new Date().toLocaleDateString('es-MX')}</div>`;
+  let html=`<div class="order-sum-title">Resumen de Orden — ${new Date().toLocaleDateString('es-MX')}</div>`;
   entries.forEach(b=>{ html+=`<div class="order-sum-row"><span>${b.name} (${b.barn})</span><span>${orderTons[b.id]} t</span></div>`; });
   html+=`<div class="order-sum-total"><span>TOTAL</span><span>${total.toFixed(1)} toneladas</span></div>`;
   box.innerHTML=html;
@@ -1455,7 +1536,7 @@ function autoFillOrder(){
     orderTons[bin.id]=Math.round(needed*2)/2;
     const inp=document.getElementById('ord-'+bin.id);if(inp) inp.value=orderTons[bin.id]||'';
   });
-  updateOrderSummary();showToast('â Auto-llenado calculado');
+  updateOrderSummary();showToast('✓ Auto-llenado calculado');
 }
 function clearOrder(){
   if(!can('canOrder')){showToast('Sin permiso','err');return}
@@ -1469,25 +1550,25 @@ function saveOrder(){
   const entries=allBins.filter(b=>(orderTons[b.id]||0)>0);
   if(!entries.length){showToast('Ingresa al menos una cantidad');return}
   const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);
-  showToast(`â Orden guardada â ${total.toFixed(1)} ton`);
+  showToast(`✓ Orden guardada — ${total.toFixed(1)} ton`);
 }
 
-// ââ ADMIN PANEL ââ
+// ── ADMIN PANEL ──
 function renderAdmin(){
   if(!can('canAdmin')){return}
   const screen=document.getElementById('admin-screen');
   screen.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="admin-section-title">GestiÃ³n de Usuarios</div>
+      <div class="admin-section-title">Gestión de Usuarios</div>
       <button class="tbl-btn primary" onclick="openAddUserModal()">+ Agregar</button>
     </div>
     <div id="users-list"></div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.6">
       <div style="color:var(--text);font-size:10px;margin-bottom:6px;font-weight:600">Roles y Permisos</div>
-      <div><span style="color:#c39bd3">â  ADMIN</span> â Todo: bodegas, lecturas, orden, usuarios</div>
-      <div><span style="color:#82e0aa">â  OPERADOR</span> â Puede ver y guardar lecturas, cambiar estado abierto/cerrado</div>
-      <div><span style="color:#7fb3d3">â  VISITANTE</span> â Solo lectura, no puede guardar ni modificar</div>
-      <div style="margin-top:8px;color:var(--yellow)">â± SesiÃ³n: 8 horas por turno</div>
+      <div><span style="color:#c39bd3">■ ADMIN</span> — Todo: bodegas, lecturas, orden, usuarios</div>
+      <div><span style="color:#82e0aa">■ OPERADOR</span> — Puede ver y guardar lecturas, cambiar estado abierto/cerrado</div>
+      <div><span style="color:#7fb3d3">■ VISITANTE</span> — Solo lectura, no puede guardar ni modificar</div>
+      <div style="margin-top:8px;color:var(--yellow)">⏱ Sesión: 8 horas por turno</div>
     </div>`;
   renderUsersList();
 }
@@ -1502,9 +1583,9 @@ function renderUsersList(){
     card.innerHTML=`
       <div class="user-card-avatar" style="background:${u.color}">${initials(u.name)}</div>
       <div class="user-card-info">
-        <div class="user-card-name">${u.name} ${isSelf?'<span style="font-size:9px;color:var(--muted)">(tÃº)</span>':''}</div>
-        <div class="user-card-user">@${u.username} Â· <span class="user-role-badge role-${u.role}" style="font-size:8px">${u.role.toUpperCase()}</span></div>
-        <div style="font-family:var(--mono);font-size:9px;color:${u.active?'var(--green)':'var(--red)'};margin-top:2px">${u.active?'â Activo':'â Inactivo'}</div>
+        <div class="user-card-name">${u.name} ${isSelf?'<span style="font-size:9px;color:var(--muted)">(tú)</span>':''}</div>
+        <div class="user-card-user">@${u.username} · <span class="user-role-badge role-${u.role}" style="font-size:8px">${u.role.toUpperCase()}</span></div>
+        <div style="font-family:var(--mono);font-size:9px;color:${u.active?'var(--green)':'var(--red)'};margin-top:2px">${u.active?'● Activo':'● Inactivo'}</div>
       </div>
       <div class="user-card-actions">
         <button class="uc-btn" onclick="openEditUserModal('${u.id}')">Editar</button>
@@ -1528,11 +1609,11 @@ function openUserModal(uid){
   box.innerHTML=`
     <div class="modal-title">${u?'Editar Usuario':'Nuevo Usuario'}</div>
     <div class="modal-field"><div class="modal-lbl">Nombre completo</div>
-      <input class="modal-input" id="m-name" value="${u?u.name:''}" placeholder="Ej: Juan GarcÃ­a"></div>
+      <input class="modal-input" id="m-name" value="${u?u.name:''}" placeholder="Ej: Juan García"></div>
     <div class="modal-field"><div class="modal-lbl">Usuario (login)</div>
       <input class="modal-input" id="m-user" value="${u?u.username:''}" placeholder="juangarcia" autocapitalize="none"></div>
-    <div class="modal-field"><div class="modal-lbl">ContraseÃ±a ${u?'(dejar vacÃ­o para no cambiar)':''}</div>
-      <input class="modal-input" id="m-pass" type="password" placeholder="MÃ­nimo 6 caracteres"></div>
+    <div class="modal-field"><div class="modal-lbl">Contraseña ${u?'(dejar vacío para no cambiar)':''}</div>
+      <input class="modal-input" id="m-pass" type="password" placeholder="Mínimo 6 caracteres"></div>
     <div class="modal-field"><div class="modal-lbl">Rol</div>
       <select class="modal-input" id="m-role">
         <option value="operador" ${u?.role==='operador'?'selected':''}>Operador</option>
@@ -1571,8 +1652,8 @@ function saveUserModal(uid){
   const role=document.getElementById('m-role').value;
   const errEl=document.getElementById('m-err');
   if(!name||!username){errEl.textContent='Nombre y usuario son requeridos';errEl.classList.add('show');return}
-  if(!uid&&!pass){errEl.textContent='La contraseÃ±a es requerida para nuevos usuarios';errEl.classList.add('show');return}
-  if(pass&&pass.length<6){errEl.textContent='ContraseÃ±a mÃ­nimo 6 caracteres';errEl.classList.add('show');return}
+  if(!uid&&!pass){errEl.textContent='La contraseña es requerida para nuevos usuarios';errEl.classList.add('show');return}
+  if(pass&&pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';errEl.classList.add('show');return}
   const dup=users.find(u=>u.username===username&&u.id!==uid);
   if(dup){errEl.textContent='Ese usuario ya existe';errEl.classList.add('show');return}
   if(uid){
@@ -1587,13 +1668,13 @@ function saveUserModal(uid){
     users.push({id:'u'+Date.now(),name,username,password:pass,role,color:window._selectedColor,active:true});
   }
   saveUsers();closeModal();renderUsersList();
-  showToast(uid?'Usuario actualizado':'â Usuario creado');
+  showToast(uid?'Usuario actualizado':'✓ Usuario creado');
 }
 
 function deleteUser(uid){
   if(uid===currentUser.id){showToast('No puedes eliminarte a ti mismo','err');return}
   const u=users.find(u=>u.id===uid);
-  if(!confirm(`Â¿Eliminar usuario "${u?.name}"?`))return;
+  if(!confirm(`¿Eliminar usuario "${u?.name}"?`))return;
   users=users.filter(u=>u.id!==uid);saveUsers();renderUsersList();
   showToast('Usuario eliminado');
 }
@@ -1602,7 +1683,7 @@ function closeModal(){
   document.getElementById('modal').classList.remove('show');
 }
 
-// ââ TOAST ââ
+// ── TOAST ──
 function showToast(msg, type=''){
   const t=document.getElementById('toast');
   t.textContent=msg;
@@ -1610,7 +1691,7 @@ function showToast(msg, type=''){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// ââ CLOCK ââ
+// ── CLOCK ──
 function updateClock(){
   const now=new Date();
   const te=document.getElementById('live-time');const de=document.getElementById('live-date');
@@ -1619,12 +1700,12 @@ function updateClock(){
   updateSessionBar();
 }
 
-// ââ SHOW USER MENU ââ
+// ── SHOW USER MENU ──
 function showUserMenu(){
-  const menu=['Cerrar sesiÃ³n'];
-  if(can('canAdmin')) menu.unshift('GestiÃ³n de usuarios');
+  const menu=['Cerrar sesión'];
+  if(can('canAdmin')) menu.unshift('Gestión de usuarios');
   const choice=menu.length>1?
-    confirm('Â¿Ir a gestiÃ³n de usuarios?\n\nCancelar = cerrar sesiÃ³n'):false;
+    confirm('¿Ir a gestión de usuarios?\n\nCancelar = cerrar sesión'):false;
   if(choice && can('canAdmin')){ switchTab('admin');return; }
   if(menu.length===1||!choice) doLogout();
 }
@@ -1639,7 +1720,7 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 // SW
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-// ââ INIT ââ
+// ── INIT ──
 updateClock();
 setInterval(updateClock,1000);
 
