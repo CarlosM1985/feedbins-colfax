@@ -211,11 +211,6 @@ textarea.notes-input:disabled{opacity:0.5;cursor:not-allowed}
 /* Save */
 .save-btn{width:100%;background:var(--green);color:#051a0e;border:none;border-radius:7px;padding:11px;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:0.8px;cursor:pointer;transition:opacity 0.15s;-webkit-tap-highlight-color:transparent}
 .save-btn:active{opacity:0.75}
-.btn-listo{width:100%;border:none;border-radius:7px;padding:13px;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.5px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
-.btn-listo.pendiente-btn{background:var(--green);color:#051a0e}
-.btn-listo.ya-listo{background:var(--green-dim);color:var(--green);border:1px solid var(--green)}
-.aviso-ronda{background:rgba(41,128,185,.1);border:1px solid rgba(41,128,185,.25);border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:9px;color:#7fb3d3;text-align:center}
-.check-badge{width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-left:2px}
 
 /* ââ TABLE SCREENS ââ */
 .table-screen{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),12px)}
@@ -297,16 +292,6 @@ select.modal-input{cursor:pointer}
 .toast{position:fixed;bottom:max(env(safe-area-inset-bottom),14px);left:12px;right:12px;max-width:500px;margin:0 auto;background:var(--green);color:#051a0e;font-family:var(--sans);font-size:12px;font-weight:800;padding:11px 14px;border-radius:7px;text-align:center;opacity:0;transform:translateY(16px);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:300;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
 .toast.error-toast{background:var(--red);color:#fff}
-
-/* ââ FULLSCREEN BIN DETAIL ââ */
-#fs-bin-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;max-width:500px;margin:0 auto}
-#fs-bin-overlay.show{display:flex}
-.fs-bin-topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:max(env(safe-area-inset-top),10px) 12px 9px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.fs-back-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:10px;padding:6px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.fs-back-btn:active{opacity:0.7}
-.fs-bin-title{font-family:var(--sans);font-size:14px;font-weight:800;flex:1}
-.fs-bin-scroll{flex:1;overflow-y:auto;padding:12px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),16px)}
-.fs-bin-scroll::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
@@ -448,16 +433,6 @@ select.modal-input{cursor:pointer}
 
 <div class="toast" id="toast"></div>
 
-<!-- ââââââââââ FULLSCREEN BIN DETAIL ââââââââââ -->
-<div id="fs-bin-overlay">
-  <div class="fs-bin-topbar">
-    <button class="fs-back-btn" onclick="closeBinFS()">â Volver</button>
-    <div class="fs-bin-title" id="fs-bin-title"></div>
-    <span class="barn-tag" id="fs-bin-barn"></span>
-  </div>
-  <div class="fs-bin-scroll" id="fs-bin-body"></div>
-</div>
-
 <script>
 // ââââââââââââââââââââââââââââââââââââââââââââ
 //  FIREBASE
@@ -485,10 +460,11 @@ const SESSION_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 // Default users â admin can add/edit/delete in the app
 const defaultUsers = [
-  { id:'u1', name:'Administrador', username:'admin',    password:'Colfax2024!', role:'admin',     color:'#8e44ad', active:true },
-  { id:'u2', name:'Operador 1',    username:'operador1', password:'Op1colfax',   role:'operador',  color:'#27ae60', active:true },
-  { id:'u3', name:'Operador 2',    username:'operador2', password:'Op2colfax',   role:'operador',  color:'#27ae60', active:true },
-  { id:'u4', name:'Visitante',     username:'visitante', password:'Ver2024',     role:'visitante', color:'#2980b9', active:true },
+  { id:'u1', name:'Administrador',  username:'admin',   password:'Colfax2024!', role:'admin',     color:'#8e44ad', active:true },
+  { id:'u2', name:'Maria Camacho',  username:'Maria',   password:'Colfax2026',  role:'operador',  color:'#8e44ad', active:true },
+  { id:'u3', name:'Ricardo Romero', username:'Ricardo', password:'Colfax2026',  role:'operador',  color:'#e67e22', active:true },
+  { id:'u4', name:'Abidan Morales', username:'Abidan',  password:'Colfax2026',  role:'operador',  color:'#e67e22', active:true },
+  { id:'u5', name:'Visita',         username:'Visita',  password:'Visita26',    role:'visitante', color:'#c0392b', active:true },
 ];
 
 function loadUsers(){
@@ -501,22 +477,19 @@ function saveUsers(){
 }
 
 let users = loadUsers();
-// Load users from Firestore before login so all devices share the same user list
-(()=>{
-  const loginBtn = document.querySelector('.login-btn');
-  if(loginBtn){ loginBtn.disabled=true; loginBtn.textContent='Cargando...'; }
-  db.collection('users').doc('list').get().then(doc=>{
-    if(doc.exists && doc.data().users && doc.data().users.length){
-      users = doc.data().users;
-      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
-    } else {
-      db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users init error',e));
-    }
-  }).catch(e=>console.warn('FB users load error',e))
-  .finally(()=>{
-    if(loginBtn){ loginBtn.disabled=false; loginBtn.textContent='Entrar'; }
-  });
-})();
+// Load users from Firestore before login so all devices share the same user list.
+// usersReady resolves once we know if Firestore has an updated list (or falls back to cache/defaults).
+let _resolveUsersReady;
+const usersReady = new Promise(resolve => { _resolveUsersReady = resolve; });
+db.collection('users').doc('list').get().then(doc=>{
+  if(doc.exists && doc.data().users && doc.data().users.length){
+    users = doc.data().users;
+    try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+  } else {
+    db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users init error',e));
+  }
+  _resolveUsersReady();
+}).catch(e=>{ console.warn('FB users load error',e); _resolveUsersReady(); });
 let currentUser = null; // {id, name, username, role, color}
 let sessionExpiry = 0;
 
@@ -532,23 +505,28 @@ function initials(name){ return name.split(' ').map(w=>w[0]).join('').toUpperCas
 
 // ââ LOGIN ââ
 function doLogin(){
-  const uval = document.getElementById('inp-user').value.trim().toLowerCase();
-  const pval = document.getElementById('inp-pass').value;
-  const errEl = document.getElementById('login-error');
-  const user = users.find(u => u.username.toLowerCase()===uval && u.password===pval && u.active);
-  if(!user){
-    errEl.classList.add('show');
-    document.getElementById('inp-pass').value='';
-    document.getElementById('inp-pass').classList.add('error');
-    setTimeout(()=>{ errEl.classList.remove('show'); document.getElementById('inp-pass').classList.remove('error'); }, 2500);
-    return;
-  }
-  currentUser = { id:user.id, name:user.name, username:user.username, role:user.role, color:user.color };
-  sessionExpiry = Date.now() + SESSION_MS;
-  try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser, expiry:sessionExpiry})); }catch(e){}
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  onLoginSuccess();
+  const btn = document.querySelector('.login-btn');
+  if(btn) { btn.disabled=true; btn.textContent='CARGANDO...'; }
+  usersReady.then(()=>{
+    if(btn) { btn.disabled=false; btn.textContent='INGRESAR'; }
+    const uval = document.getElementById('inp-user').value.trim().toLowerCase();
+    const pval = document.getElementById('inp-pass').value;
+    const errEl = document.getElementById('login-error');
+    const user = users.find(u => u.username.toLowerCase()===uval && u.password===pval && u.active);
+    if(!user){
+      errEl.classList.add('show');
+      document.getElementById('inp-pass').value='';
+      document.getElementById('inp-pass').classList.add('error');
+      setTimeout(()=>{ errEl.classList.remove('show'); document.getElementById('inp-pass').classList.remove('error'); }, 2500);
+      return;
+    }
+    currentUser = { id:user.id, name:user.name, username:user.username, role:user.role, color:user.color };
+    sessionExpiry = Date.now() + SESSION_MS;
+    try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser, expiry:sessionExpiry})); }catch(e){}
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    onLoginSuccess();
+  });
 }
 
 function restoreSession(){
@@ -599,6 +577,15 @@ function initFirestoreSync(){
   },err=>console.warn('FB listener error',err));
 
   // Real-time users sync â admin changes propagate to all devices
+  db.collection('users').doc('list').onSnapshot(doc=>{
+    if(doc.exists && doc.data().users && doc.data().users.length){
+      users = doc.data().users;
+      try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
+      if(document.getElementById('users-list')) renderUsersList();
+    }
+  },err=>console.warn('FB users listener error',err));
+
+  // Real-time users sync
   db.collection('users').doc('list').onSnapshot(doc=>{
     if(doc.exists && doc.data().users && doc.data().users.length){
       users = doc.data().users;
@@ -663,7 +650,7 @@ function onLoginSuccess(){
   const bch = document.getElementById('btn-clear-hist');
   if(bch) bch.style.display = can('canDeleteHist') ? 'block' : 'none';
 
-  sessionReadings=new Set(); sessionStart=null; pendientes={};
+  sessionReadings=new Set(); sessionStart=null;
   renderFilters();
   renderBins();
   switchTab('bins');
@@ -737,7 +724,6 @@ function saveOrderData(){
 let allBins=loadBins(), history=loadHistory(), orderTons=loadOrder();
 let expanded=null, activeFilter="Todos", currentTab='bins';
 let sessionReadings=new Set(), sessionStart=null;
-let pendientes={}; // {binId: {level, notes}} â lecturas marcadas listas para guardar
 const filters=["Todos","GestaciÃ³n","Breeding","LactaciÃ³n","CrÃ­ticos","Cerrados"];
 
 // ââ HELPERS ââ
@@ -750,17 +736,7 @@ function nowTs(){return new Date().toISOString()}
 function makeSVG(p,color,w,h,cap=null){
   const bt=h*0.12,bb=h*0.80,bh=bb-bt,fh=bh*p/100,fy=bb-fh;
   const lx=w*0.14,rx=w*0.86,uid='sv'+p+'w'+Math.round(w)+color.replace('#','');
-  // Tonnage tick marks (only on expanded SVG where w>=100)
-  let ticks='';
-  if(cap && cap>0 && w>=100){
-    for(let t=1;t<cap;t++){
-      const ty=bb-(bh*t/cap);
-      const isHalf=(cap>=6 && t===Math.floor(cap/2));
-      ticks+=`<line x1="${rx}" y1="${ty}" x2="${rx+4}" y2="${ty}" stroke="#4e5f7a" stroke-width="${isHalf?1.5:0.8}"/>`;
-      ticks+=`<text x="${rx+6}" y="${ty+2.5}" font-size="5.5" fill="${isHalf?'#7a8fa8':'#4e5f7a'}" font-family="monospace">${t}t</text>`;
-    }
-  }
-  return `<svg viewBox="0 0 ${w+(cap&&w>=100?18:0)} ${h}" fill="none"><defs><clipPath id="${uid}"><rect x="${lx}" y="${bt}" width="${w*0.72}" height="${bh}" rx="2"/></clipPath></defs>
+  return `<svg viewBox="0 0 ${w} ${h}" fill="none"><defs><clipPath id="${uid}"><rect x="${lx}" y="${bt}" width="${w*0.72}" height="${bh}" rx="2"/></clipPath></defs>
     <path d="M${w*.5} 3 L${rx+2} ${bt} L${lx-2} ${bt} Z" fill="#242d42"/>
     <rect x="${lx}" y="${bt}" width="${w*0.72}" height="${bh}" rx="2" fill="#111520" stroke="#242d42" stroke-width="1"/>
     <rect x="${lx}" y="${fy}" width="${w*0.72}" height="${fh}" fill="${color}" opacity="0.88" clip-path="url(#${uid})"/>
@@ -769,7 +745,7 @@ function makeSVG(p,color,w,h,cap=null){
     <path d="M${lx} ${bb} L${w*.5} ${h*0.95} L${rx} ${bb} Z" fill="${p>0?color:'#111520'}" opacity="${p>0?'0.85':'1'}" stroke="${p>0?color:'#242d42'}" stroke-width="1"/>
     <line x1="${w*0.30}" y1="${h*0.93}" x2="${w*0.24}" y2="${h}" stroke="${p>0?color:'#242d42'}" stroke-width="1.5" opacity="${p>0?'0.6':'1'}"/>
     <line x1="${w*0.70}" y1="${h*0.93}" x2="${w*0.76}" y2="${h}" stroke="${p>0?color:'#242d42'}" stroke-width="1.5" opacity="${p>0?'0.6':'1'}"/>
-    ${ticks}
+    ${(()=>{let t='';if(cap&&cap>0&&w>=100){const bt2=h*0.12,bb2=h*0.80,bh2=bb2-bt2,rx2=w*0.86;for(let i=1;i<cap;i++){const ty=bb2-(bh2*i/cap);const isH=(cap>=6&&i===Math.floor(cap/2));t+=`<line x1="${rx2}" y1="${ty}" x2="${rx2+4}" y2="${ty}" stroke="#4e5f7a" stroke-width="${isH?1.5:0.8}"/>`;t+=`<text x="${rx2+6}" y="${ty+2.5}" font-size="5.5" fill="${isH?'#7a8fa8':'#4e5f7a'}" font-family="monospace">${i}t</text>`;}}return t;})()}
   </svg>`;
 }
 
@@ -811,7 +787,7 @@ function onSlide(binId,val){
   bin.level=parseInt(val);
   const color=col(bin.level);
   const esvg=document.getElementById('esvg-'+binId);
-  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154,bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
+  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154,bin.cap||bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
   const ep=document.getElementById('epb-'+binId);if(ep){ep.textContent=bin.level+'%';ep.className='exp-pct-big '+valCls(bin.level)}
   const inv=(bin.cap*bin.level/100).toFixed(2);
   const et=document.getElementById('eton-'+binId);if(et) et.textContent=inv+' ton de '+bin.cap;
@@ -873,45 +849,6 @@ function saveLevel(binId){
   }
 }
 
-// ââ FULLSCREEN BIN DETAIL ââ
-function openBinFS(binId){
-  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
-  const displayBin=pendientes[binId]?{...bin,level:pendientes[binId].level,notes:pendientes[binId].notes}:bin;
-  document.getElementById('fs-bin-title').textContent=bin.name;
-  document.getElementById('fs-bin-barn').textContent=bin.barn;
-  document.getElementById('fs-bin-body').innerHTML=buildExpandHTML(displayBin);
-  const eb=document.getElementById('fs-bin-body').querySelector('.expand-body');
-  if(eb){eb.style.borderTop='none';eb.style.paddingTop='0';eb.style.marginTop='0';}
-  document.getElementById('fs-bin-overlay').classList.add('show');
-}
-function closeBinFS(){
-  document.getElementById('fs-bin-overlay').classList.remove('show');
-}
-// ââ MARCAR BIN COMO LISTO (sin guardar aÃºn) ââ
-function marcarListo(binId){
-  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
-  const sliderEl=document.getElementById('vsl-'+binId);
-  const notesEl=document.getElementById('notes-'+binId);
-  const level=sliderEl?parseInt(sliderEl.value):bin.level;
-  const notes=notesEl?notesEl.value.trim():bin.notes;
-  bin.level=level;bin.notes=notes;
-  pendientes[binId]={level,notes};
-  if(!sessionStart)sessionStart=new Date();
-  showToast('â '+bin.name+' â lista para guardar');
-  closeBinFS();
-  renderBins();renderFilters();updateEnviarBtn();
-}
-function saveBinData(binId,level,notes){
-  const bin=allBins.find(b=>b.id===binId);if(!bin)return;
-  const prev=bin.prevLevel!=null?bin.prevLevel:bin.level;
-  bin.level=level;bin.notes=notes;bin.prevLevel=level;bin.ts=nowTs();bin.savedBy=currentUser.name;
-  history.unshift({ts:bin.ts,binId:bin.id,binName:bin.name,barn:bin.barn,group:bin.group,
-    diet:bin.diet,cap:bin.cap,level:bin.level,prevLevel:prev,notes:bin.notes,
-    isOpen:bin.isOpen,savedBy:currentUser.name,userRole:currentUser.role});
-  if(history.length>1000)history=history.slice(0,1000);
-  saveSingleBin(bin);saveHistData(history[0]);
-}
-
 // ââ BUILD CARD HTML ââ
 function buildCardHTML(bin){
   const color=col(bin.level);const inv=(bin.cap*bin.level/100).toFixed(1);
@@ -930,7 +867,6 @@ function buildCardHTML(bin){
       <div class="sdot ${dotCls(bin.level)}"></div>
       <div class="bin-ton">${inv}t</div>
     </div>
-    ${pendientes[bin.id]?'<div class="check-badge">â</div>':''}
   </div>`;
 }
 
@@ -951,7 +887,7 @@ function buildExpandHTML(bin){
       </div>
       <div class="exp-svg-wrap">
         <div class="exp-svg" id="esvg-${bin.id}">
-          ${makeSVG(bin.level,color,110,154,bin.cap)}
+          ${makeSVG(bin.level,color,110,154)}
           <div class="exp-pct-lbl">${bin.level}%</div>
         </div>
         <div class="exp-pct-big ${valCls(bin.level)}" id="epb-${bin.id}">${bin.level}%</div>
@@ -977,12 +913,7 @@ function buildExpandHTML(bin){
       <div class="notes-lbl">Notas</div>
       <textarea class="notes-input" id="notes-${bin.id}" placeholder="Observacionesâ¦" ${ro?'disabled':''}>${bin.notes||''}</textarea>
     </div>
-    ${!ro?`
-      <button class="btn-listo ${pendientes[bin.id]?'ya-listo':'pendiente-btn'}" onclick="event.stopPropagation();marcarListo(${bin.id})">
-        ${pendientes[bin.id]?'â Lectura ingresada â editar':'â MARCAR COMO LISTA'}
-      </button>
-      <div class="aviso-ronda">Al terminar todos los bins, presiona <strong>GUARDAR RONDA</strong> desde la lista</div>
-    `:''}
+    ${!ro?`<button class="save-btn" onclick="event.stopPropagation();saveLevel(${bin.id})">GUARDAR LECTURA</button>`:''}
   </div>`;
 }
 
@@ -1034,7 +965,7 @@ function renderBins(){
     if(groupBins.length>1){
       // Render as tandem group box
       const tg=document.createElement('div');tg.className='tandem-group';
-      tg.innerHTML<`<div class="tandem-label">Bodega ${def.barn} â ${groupBins.map(b=>b.name).join(' + ')}</div>`;
+      tg.innerHTML=`<div class="tandem-label">Bodega ${def.barn} â ${groupBins.map(b=>b.name).join(' + ')}</div>`;
       groupBins.forEach(b=>tg.appendChild(createBinCard(b)));
       list.appendChild(tg);
     } else {
@@ -1044,13 +975,15 @@ function renderBins(){
 }
 
 function createBinCard(bin){
+  const isOpen=expanded===bin.id;
   const card=document.createElement('div');
-  card.className='bin-card'+(bin.isOpen?'':' closed-bin');
+  card.className='bin-card'+(isOpen?' open':'')+(bin.isOpen?'':' closed-bin');
   card.setAttribute('data-binid',bin.id);
-  card.innerHTML=buildCardHTML(bin);
+  card.innerHTML=buildCardHTML(bin)+(isOpen?buildExpandHTML(bin):'');
   card.addEventListener('click',(e)=>{
     if(e.target.closest('input,button,textarea,select'))return;
-    openBinFS(bin.id);
+    expanded=(isOpen?null:bin.id);renderBins();
+    if(!isOpen) setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
   });
   return card;
 }
@@ -1065,10 +998,10 @@ function switchLecturasSub(sub){
   if(sub==='historial') renderLecturas();
 }
 
-// ââ RESUMEN â civel actual de los 22 bins en orden numÃ©rico ââ
+// ââ RESUMEN â nivel actual de los 22 bins en orden numÃ©rico ââ
 function renderResumen(){
   const wrap=document.getElementById('resumen-wrap');
-  if('wrap) return;
+  if(!wrap) return;
 
   const sorted=[...allBins].sort((a,b)=>a.id-b.id);
   const totalCap=sorted.reduce((s,b)=>s+b.cap,0);
@@ -1274,7 +1207,7 @@ function renderComparativa(){
   const totalInv=sorted.reduce((s,b)=>s+(b.cap*b.level/100),0);
   const totalSpace=sorted.reduce((s,b)=>s+Math.max(0,b.cap-(b.cap*b.level/100)),0);
   const totalOrder=sorted.reduce((s,b)=>s+(orderTons[b.id]||0),0);
-  const overallPct=Math.round(totalInv+totalCap*100);
+  const overallPct=Math.round(totalInv/totalCap*100);
   const overallAfter=Math.min(100,Math.round((totalInv+totalOrder)/totalCap*100));
   const overfill=sorted.filter(b=>{const sp=Math.max(0,b.cap-(b.cap*b.level/100));return (orderTons[b.id]||0)>sp+0.1;}).length;
   const lowAfter=sorted.filter(b=>{const inv=b.cap*b.level/100;const after=Math.min(100,Math.round((inv+(orderTons[b.id]||0))/b.cap*100));return (orderTons[b.id]||0)>0&&after<80;}).length;
@@ -1356,7 +1289,7 @@ function renderComparativa(){
       wrapper.style.cssText=`border:1px solid rgba(41,128,185,0.4);border-radius:10px;overflow:hidden;margin-bottom:0`;
       const tlabel=document.createElement('div');
       tlabel.style.cssText='background:rgba(41,128,185,0.07);border-bottom:0.5px solid rgba(41,128,185,0.2);padding:5px 12px;font-family:var(--mono);font-size:8px;color:var(--blue);display:flex;gap:5px;align-items:center';
-      tlabel.innerHTML<`<span>â</span> Bodega ${def.barn}`;
+      tlabel.innerHTML=`<span>â</span> Bodega ${def.barn}`;
       wrapper.appendChild(tlabel);
     }
 
@@ -1473,34 +1406,20 @@ function renderComparativa(){
 // ââ ENVIAR RONDA ââ
 function updateEnviarBtn(){
   const btn=document.getElementById('btn-enviar-ronda');
-  if(!btn)return;
-  const n=Object.keys(pendientes).length;
-  if(n>0){
+  if(!btn) return;
+  if(sessionReadings.size>0){
     btn.style.display='flex';
-    btn.style.background='linear-gradient(135deg,var(--green),#1e8449)';
-    btn.style.boxShadow='0 2px 12px rgba(39,174,96,0.4)';
-    btn.textContent='â GUARDAR RONDA ('+n+' bin'+(n===1?'':'s')+')';
-  }else{
-    btn.style.display='none';
-  }
+    btn.textContent='â Enviar ronda ('+sessionReadings.size+' bins)';
+  } else { btn.style.display='none'; }
 }
 function enviarRonda(){
-  if(!can('canSave')){ showToast('Sin permiso','err'); return; }
-  const ids=Object.keys(pendientes).map(Number);
-  if(!ids.length){ showToast('No hay lecturas pendientes'); return; }
-  if(!sessionStart)sessionStart=new Date();
-  ids.forEach(id=>{ const d=pendientes[id]; saveBinData(id,d.level,d.notes); });
-  const summary=allBins.filter(b=>ids.includes(b.id)).map(b=>({id:b.id,name:b.name,barn:b.barn,level:b.level,ts:b.ts}));
-  const ronda={
-    ts:new Date().toISOString(),user:currentUser.name,role:currentUser.role,
-    binCount:ids.length,sessionStart:sessionStart?sessionStart.toISOString():null,bins:summary
-  };
-  db.collection('rondas').add(ronda)
-    .then(()=>{ showToast('â Ronda guardada â '+ids.length+' lectura'+(ids.length===1?'':'s')+' registradas'); })
-    .catch(e=>{ showToast('Error al guardar ronda','err'); console.warn(e); });
-  pendientes={};sessionStart=null;sessionReadings=new Set();
-  updateEnviarBtn();
-  renderBins();
+  if(!can('canSave')){showToast('Sin permiso','err');return}
+  if(!sessionReadings.size){showToast('No hay lecturas en esta sesiÃ³n');return}
+  const binsRead=allBins.filter(b=>sessionReadings.has(b.id));
+  const summary=binsRead.map(b=>({id:b.id,name:b.name,barn:b.barn,level:b.level,ts:b.ts}));
+  const ronda={ts:new Date().toISOString(),user:currentUser.name,role:currentUser.role,binCount:sessionReadings.size,sessionStart:sessionStart?sessionStart.toISOString():null,bins:summary};
+  db.collection('rondas').add(ronda).then(()=>{showToast('â Ronda enviada â '+sessionReadings.size+' bins registrados');}).catch(e=>{showToast('Error al enviar ronda','err');console.warn(e);});
+  sessionReadings=new Set();sessionStart=null;updateEnviarBtn();
 }
 
 // ââ TABS ââ
