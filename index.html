@@ -10,8 +10,9 @@
 <meta name="apple-mobile-web-app-title" content="FeedBins">
 <link rel="manifest" href="manifest.json">
 <title>FeedBins · Colfax</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -27,51 +28,143 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
 
 /* ══════════════════════════════════
-   LOGIN SCREEN
+   LOGIN / WELCOME SCREENS
 ══════════════════════════════════ */
 #login-screen{
-  position:fixed;inset:0;background:var(--bg);
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:24px;z-index:1000;
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  z-index:1000;overflow:hidden;background:#000;
 }
-.login-logo{
-  font-family:var(--mono);font-size:28px;font-weight:600;
-  color:var(--text);margin-bottom:6px;letter-spacing:-1px;
+
+/* ── Welcome splash ── */
+#ls-welcome{
+  flex:1;display:flex;flex-direction:column;
+  padding:max(env(safe-area-inset-top),60px) 28px max(env(safe-area-inset-bottom),48px);
+  position:relative;
 }
-.login-logo em{color:var(--green);font-style:normal}
-.login-subtitle{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:36px;letter-spacing:0.5px}
-.login-box{
-  width:100%;max-width:340px;
-  background:var(--s1);border:1px solid var(--border);
-  border-radius:14px;padding:24px;
-  display:flex;flex-direction:column;gap:14px;
+.ls-glow{
+  position:absolute;top:0;left:0;right:0;height:55%;
+  background:radial-gradient(120% 60% at 50% 8%,rgba(0,230,118,0.22),rgba(0,0,0,0) 60%);
+  pointer-events:none;
 }
-.login-field{display:flex;flex-direction:column;gap:5px}
-.login-lbl{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:0.8px;text-transform:uppercase}
-.login-input{
-  background:var(--s2);border:1px solid var(--border2);border-radius:7px;
-  color:var(--text);font-family:var(--mono);font-size:14px;
-  padding:11px 14px;outline:none;width:100%;
-  transition:border-color 0.15s;
+.ls-wordmark{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:14px;position:relative;
 }
-.login-input:focus{border-color:var(--green)}
-.login-input.error{border-color:var(--red)}
-.login-btn{
-  width:100%;background:var(--green);color:#051a0e;
-  border:none;border-radius:8px;padding:13px;
-  font-family:var(--sans);font-size:14px;font-weight:800;
-  letter-spacing:0.5px;cursor:pointer;transition:opacity 0.15s;
-  margin-top:4px;
+.ls-wordmark-text{
+  font-family:'Space Grotesk','Barlow',sans-serif;
+  font-weight:700;font-size:22px;color:#fff;letter-spacing:-0.5px;
 }
-.login-btn:active{opacity:0.8}
-.login-error{
-  font-family:var(--mono);font-size:11px;color:var(--red);
-  text-align:center;background:rgba(192,57,43,0.1);
-  border:1px solid rgba(192,57,43,0.3);border-radius:6px;
-  padding:8px;display:none;
+.ls-eyebrow{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Space Mono','IBM Plex Mono',monospace;
+  font-size:11px;letter-spacing:1.5px;color:#00E676;
+  text-transform:uppercase;position:relative;
 }
-.login-error.show{display:block}
-.login-version{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:20px;text-align:center}
+.ls-eyebrow-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#00E676;box-shadow:0 0 8px #00E676;flex-shrink:0;
+}
+.ls-spacer{flex:1}
+.ls-headline{
+  font-family:'Space Grotesk','Barlow',sans-serif;
+  font-weight:500;font-size:42px;line-height:1.06;
+  letter-spacing:-1.2px;color:#fff;margin-bottom:16px;
+}
+.ls-headline span{color:#00E676}
+.ls-body{
+  font-family:'Space Grotesk','Barlow',sans-serif;
+  font-size:16px;line-height:1.5;
+  color:rgba(255,255,255,0.52);max-width:300px;margin-bottom:32px;
+}
+.ls-btn-primary{
+  width:100%;height:56px;border-radius:16px;
+  background:#00E676;color:#04140A;
+  border:none;font-family:'Space Grotesk','Barlow',sans-serif;
+  font-weight:600;font-size:17px;letter-spacing:-0.2px;
+  cursor:pointer;transition:opacity 0.15s;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 30px rgba(0,230,118,0.28);
+}
+.ls-btn-primary:active{opacity:0.8}
+.ls-btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.ls-tagline{
+  font-family:'Space Mono','IBM Plex Mono',monospace;
+  font-size:10px;letter-spacing:0.8px;
+  color:rgba(255,255,255,0.34);text-align:center;
+  margin-top:14px;text-transform:uppercase;
+}
+
+/* ── Login form ── */
+#ls-form{
+  flex:1;display:flex;flex-direction:column;
+  padding:max(env(safe-area-inset-top),52px) 28px max(env(safe-area-inset-bottom),48px);
+  background:#000;
+}
+.ls-back{
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.10);
+  background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:28px;flex-shrink:0;
+}
+.ls-form-title{
+  font-family:'Space Grotesk','Barlow',sans-serif;
+  font-weight:600;font-size:30px;letter-spacing:-0.8px;
+  color:#fff;margin-bottom:6px;
+}
+.ls-form-sub{
+  font-family:'Space Grotesk','Barlow',sans-serif;
+  font-size:15px;color:rgba(255,255,255,0.52);
+  letter-spacing:-0.1px;margin-bottom:28px;
+}
+.ls-field{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.ls-lbl{
+  font-family:'Space Mono','IBM Plex Mono',monospace;
+  font-size:10px;letter-spacing:1.2px;
+  color:rgba(255,255,255,0.34);text-transform:uppercase;
+}
+.ls-input{
+  height:56px;border-radius:14px;
+  background:rgba(255,255,255,0.045);
+  border:1px solid rgba(255,255,255,0.10);
+  color:#fff;font-family:'Space Grotesk','Barlow',sans-serif;
+  font-size:16px;letter-spacing:-0.2px;
+  padding:0 16px;outline:none;width:100%;
+  -webkit-appearance:none;
+  transition:border-color 0.15s,box-shadow 0.15s;
+}
+.ls-input::placeholder{color:rgba(255,255,255,0.25)}
+.ls-input:focus{
+  border-color:#00E676;
+  box-shadow:0 0 0 4px rgba(0,230,118,0.12);
+}
+.ls-input.error{border-color:#e74c3c}
+.ls-error{
+  font-family:'Space Mono','IBM Plex Mono',monospace;
+  font-size:11px;color:#e74c3c;text-align:center;
+  background:rgba(231,76,60,0.10);
+  border:1px solid rgba(231,76,60,0.30);
+  border-radius:10px;padding:10px;display:none;margin-bottom:4px;
+}
+.ls-error.show{display:block}
+.ls-version{
+  font-family:'Space Mono','IBM Plex Mono',monospace;
+  font-size:9px;color:rgba(255,255,255,0.28);
+  margin-top:14px;text-align:center;text-transform:uppercase;letter-spacing:0.5px;
+}
+.lang-btn{
+  position:absolute;top:max(env(safe-area-inset-top),18px);right:18px;
+  border:1px solid rgba(255,255,255,0.16);border-radius:999px;
+  background:rgba(255,255,255,0.06);color:#fff;
+  font-family:'Space Mono','IBM Plex Mono',monospace;font-size:10px;
+  letter-spacing:.7px;padding:7px 10px;cursor:pointer;z-index:2;
+}
+.top-lang-btn{
+  border:1px solid var(--border2);border-radius:999px;background:var(--s2);
+  color:var(--muted2);font-family:var(--mono);font-size:9px;font-weight:600;
+  padding:5px 8px;cursor:pointer;flex-shrink:0;
+}
 
 /* ══════════════════════════════════
    APP SHELL
@@ -98,6 +191,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .user-role-badge{font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600}
 .role-admin{background:rgba(142,68,173,0.2);color:#c39bd3;border:1px solid rgba(142,68,173,0.3)}
 .role-operador{background:rgba(39,174,96,0.15);color:#82e0aa;border:1px solid rgba(39,174,96,0.25)}
+.role-encargado{background:rgba(230,126,34,0.15);color:#f0b27a;border:1px solid rgba(230,126,34,0.3)}
 .role-visitante{background:rgba(41,128,185,0.15);color:#7fb3d3;border:1px solid rgba(41,128,185,0.25)}
 .topbar-center{flex:1;text-align:center}
 .topbar-time{font-family:var(--mono);font-size:11px;color:var(--text)}
@@ -313,23 +407,69 @@ select.modal-input{cursor:pointer}
 
 <!-- ══════════ LOGIN SCREEN ══════════ -->
 <div id="login-screen">
-  <div class="login-logo"><em>Feed</em>Bins</div>
-  <div class="login-subtitle">GRANJA COLFAX · SISTEMA DE BODEGAS</div>
-  <div class="login-box">
-    <div class="login-field">
-      <div class="login-lbl">Usuario</div>
-      <input class="login-input" id="inp-user" type="text" autocomplete="username"
+  <button class="lang-btn" id="lang-btn" onclick="toggleLang(event)">EN</button>
+
+  <!-- State 1: Welcome splash -->
+  <div id="ls-welcome">
+    <div class="ls-glow"></div>
+    <!-- Wordmark -->
+    <div class="ls-wordmark">
+      <svg width="40" height="46" viewBox="0 0 32 36" fill="none" style="filter:drop-shadow(0 0 9px rgba(0,230,118,0.32));flex-shrink:0">
+        <defs><clipPath id="bin-clip-w"><path d="M9 12 L13 5 L19 5 L23 12 L23 23 L18.5 31 L13.5 31 L9 23 Z"/></clipPath></defs>
+        <g clip-path="url(#bin-clip-w)"><rect x="0" y="20.5" width="32" height="16" fill="#00E676"/></g>
+        <path d="M9 12 L13 5 L19 5 L23 12 L23 23 L18.5 31 L13.5 31 L9 23 Z" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"/>
+        <path d="M9 20.5 H23" stroke="rgba(255,255,255,0.85)" stroke-width="1.4"/>
+        <path d="M13 5 H19" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>
+        <g stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M4.5 13 H8.5"/><path d="M6 16.5 H8.5"/>
+          <path d="M4.5 20 H8.5"/><path d="M6 23.5 H8.5"/><path d="M4.5 27 H8.5"/>
+        </g>
+        <g stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 26 L7.5 35"/><path d="M21 26 L24.5 35"/>
+          <path d="M9 31.5 L23 31.5"/>
+          <path d="M6 35 H9"/><path d="M23 35 H26"/>
+        </g>
+      </svg>
+      <span class="ls-wordmark-text">FeedBins</span>
+    </div>
+    <!-- Eyebrow -->
+    <div class="ls-eyebrow">
+      <span class="ls-eyebrow-dot"></span>
+      Monitoreo en tiempo real
+    </div>
+    <div class="ls-spacer"></div>
+    <!-- Hero copy -->
+    <h1 class="ls-headline">Controla cada<br><span>bodega.</span></h1>
+    <p class="ls-body">Niveles, consumo y reabastecimiento de toda tu operación — en tiempo real, desde cualquier dispositivo.</p>
+    <button class="ls-btn-primary" onclick="showLoginForm()">Ingresar</button>
+    <div class="ls-tagline">Granja Colfax · Sistema de Bodegas</div>
+  </div>
+
+  <!-- State 2: Login form -->
+  <div id="ls-form" style="display:none">
+    <button class="ls-back" onclick="showWelcomeScreen()">
+      <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
+        <path d="M7.5 1L1 8l6.5 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="ls-form-title">Iniciar sesión</div>
+    <div class="ls-form-sub">Ingresa con tus credenciales de Colfax.</div>
+    <div class="ls-field">
+      <div class="ls-lbl">Usuario</div>
+      <input class="ls-input" id="inp-user" type="text" autocomplete="username"
         placeholder="usuario" autocapitalize="none" autocorrect="off" spellcheck="false">
     </div>
-    <div class="login-field">
-      <div class="login-lbl">Contraseña</div>
-      <input class="login-input" id="inp-pass" type="password" autocomplete="current-password"
+    <div class="ls-field">
+      <div class="ls-lbl">Contraseña</div>
+      <input class="ls-input" id="inp-pass" type="password" autocomplete="current-password"
         placeholder="••••••••">
     </div>
-    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
-    <button class="login-btn" onclick="doLogin()">INGRESAR</button>
+    <div class="ls-error" id="login-error">Usuario o contraseña incorrectos</div>
+    <div class="ls-spacer"></div>
+    <button class="ls-btn-primary" onclick="doLogin()">Entrar</button>
+    <div class="ls-version">FeedBins v4.0 · Sesión de 8 horas</div>
   </div>
-  <div class="login-version">FeedBins v4.0 · Sesión de 8 horas</div>
+
 </div>
 
 <!-- ══════════ APP SHELL ══════════ -->
@@ -340,6 +480,7 @@ select.modal-input{cursor:pointer}
       <div class="topbar-time" id="live-time"></div>
       <div class="topbar-date" id="live-date"></div>
     </div>
+    <button class="top-lang-btn" id="app-lang-btn" onclick="toggleLang(event)">EN</button>
     <div class="user-pill" onclick="showUserMenu()">
       <div class="user-avatar" id="topbar-avatar"></div>
       <div>
@@ -435,7 +576,7 @@ select.modal-input{cursor:pointer}
   </div>
 
   <div class="session-bar" id="session-bar">
-    <span>Sesión activa:</span>
+    <span>Usuario:</span>
     <span id="session-countdown"></span>
     <span id="session-logout" onclick="doLogout()" style="cursor:pointer;color:var(--red)">Cerrar sesión</span>
   </div>
@@ -472,23 +613,216 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
+
+// Language system
+const LANG = {
+  es: {
+    langBtn:'EN', realtime:'Monitoreo en tiempo real', headline:'Controla cada<br><span>bodega.</span>',
+    welcomeBody:'Niveles, consumo y reabastecimiento de toda tu operación — en tiempo real, desde cualquier dispositivo.',
+    enter:'Ingresar', tagline:'Granja Colfax · Sistema de Bodegas', loginTitle:'Iniciar sesión',
+    loginSub:'Ingresa con tus credenciales de Colfax.', user:'Usuario', password:'Contraseña',
+    userPlaceholder:'usuario', loginError:'Usuario o contraseña incorrectos', loginAction:'Entrar',
+    version:'FeedBins v4.0 · Sesión de 8 horas', loading:'Cargando...', verifying:'Verificando...',
+    missingLogin:'Ingresa usuario y contraseña', binsTab:'📊 BODEGAS', readingsTab:'📋 LECTURAS',
+    orderTab:'🛒 ORDEN', compareTab:'📈 COMPARATIVA', usersTab:'⚙️ USUARIOS',
+    total:'Total', avg:'Prom.', critical:'Críticas', closed:'Cerradas', sendRound:'✉ Enviar ronda',
+    summary22:'📊 RESUMEN 22 BINS', history:'📋 HISTORIAL', currentLevels:'Niveles actuales — todos los bins',
+    savedReadings:'Lecturas guardadas por fecha', clear:'🗑 Limpiar', foodOrder:'Orden de Alimento',
+    autofill:'⚡ Auto-llenar', orderHint:'Ingresa las toneladas a pedir. ⚡ Auto-llenar calcula para llenar cada bin al 100%.',
+    readonlyOrderHint:'Vista de la orden pendiente (solo lectura)', saveOrder:'GUARDAR ORDEN',
+    sessionUser:'Usuario:', logout:'Cerrar sesión', back:'← Volver', all:'Todos', gestation:'Gestación',
+    breeding:'Breeding', lactation:'Lactación', criticalFilter:'Críticos', closedFilter:'Cerrados',
+    noReadings:'Sin lecturas', noSavedReadings:'Sin lecturas guardadas aún.', by:'por',
+    readonlyMode:'👁 Modo solo lectura', open:'🟢 ABIERTO', closedStatus:'🔴 CERRADO',
+    capacity:'Capacidad', inventory:'Inventario', barn:'Bodega', group:'Grupo',
+    lastReading:'Última lectura', notes:'Notas', notesPlaceholder:'Observaciones...',
+    readingEntered:'✓ Lectura ingresada — editar', markReady:'✓ MARCAR COMO LISTA',
+    roundNotice:'Al terminar todos los bins, presiona <strong>GUARDAR RONDA</strong> desde la lista',
+    saved:'guardado', readyToSave:'lista para guardar', noPermissionStatus:'Sin permiso para cambiar estado',
+    noPermissionSave:'Sin permiso para guardar lecturas', noPermission:'Sin permiso', confirmLogout:'¿Cerrar sesión?',
+    current:'Actual', free:'libre', openPlain:'Abierto', closedPlain:'Cerrado',
+    totals22:'TOTALES — 22 BINS', totalCapacity:'CAPACIDAD TOTAL', totalInventory:'INVENTARIO TOTAL',
+    freeSpace:'ESPACIO LIBRE', globalAverage:'PROMEDIO GLOBAL', summaryCsvDownloaded:'CSV de resumen descargado',
+    csvDownloaded:'CSV descargado', noCsv:'Sin lecturas para exportar', adminOnlyHistory:'Solo el admin puede eliminar historial',
+    confirmClearHistory:'¿Eliminar todo el historial?', historyDeleted:'Historial eliminado',
+    actual:'Actual', space:'Espacio', orderSummary:'Resumen de Orden', tons:'toneladas',
+    orderCleaned:'Orden limpiada', enterAmount:'Ingresa al menos una cantidad', orderSaved:'Orden guardada',
+    autofillDone:'✓ Auto-llenado calculado', compare:'Comparativa', compareSub:'Lectura actual vs Orden de alimento',
+    globalAvg:'promedio global', ordered:'ORDENADO', overfilled:'sobrellenado', noOrder:'sin pedir',
+    requested:'pedidas', now:'ahora', postDelivery:'POST-ENTREGA', difference:'DIFERENCIA',
+    excess:'EXCESO', noOrderForBin:'— Sin pedido registrado para este bin', totalOrdered:'TOTAL ORDENADO',
+    estimatedPost:'NIVEL POST-ENTREGA ESTIMADO', globalPost:'Promedio global post-entrega',
+    saveRound:'✉ GUARDAR RONDA', noPendingReadings:'No hay lecturas pendientes', roundSaved:'Ronda guardada',
+    readingsRegistered:'registradas', errorSavingRound:'Error al guardar ronda', userManagement:'Gestión de Usuarios',
+    add:'+ Agregar', rolesPerms:'Roles y Permisos', adminPerm:'■ ADMIN — Todo: bodegas, lecturas, orden, usuarios',
+    managerPerm:'■ ENCARGADO — Puede guardar lecturas, cambiar estado y hacer órdenes',
+    operatorPerm:'■ OPERADOR — Puede ver y guardar lecturas, cambiar estado abierto/cerrado',
+    visitorPerm:'■ VISITANTE — Solo lectura, no puede guardar ni modificar', session8:'⏱ Sesión: 8 horas por turno',
+    editUser:'Editar Usuario', newUser:'Nuevo Usuario', fullName:'Nombre completo', loginUser:'Usuario (login)',
+    passwordsFirebase:'🔒 Las contraseñas se gestionan en Firebase Console.',
+    resetPasswordHelp:'Para cambiarla: Authentication → Users → Reset password.',
+    createPasswordHelp:'Al crear, ve a Firebase Console → Authentication → Add user con el email:',
+    role:'Rol', manager:'Encargado', operator:'Operador', visitor:'Visitante', admin:'Administrador',
+    color:'Color', cancel:'Cancelar', save:'Guardar', requiredUser:'Nombre y usuario son requeridos',
+    duplicateUser:'Ese usuario ya existe', userUpdated:'Usuario actualizado',
+    profileCreated:'✓ Perfil creado. Recuerda crear la cuenta en Firebase Console.',
+    noDeleteSelf:'No puedes eliminarte a ti mismo', confirmDeleteUser:'¿Eliminar usuario',
+    userDeleted:'Usuario eliminado', userMenuAdmin:'Gestión de usuarios', changePassword:'Cambiar contraseña',
+    newPassword:'Nueva contraseña', confirmPassword:'Confirmar contraseña', minPassword:'Mínimo 6 caracteres',
+    repeatPassword:'Repite la contraseña', passwordsNoMatch:'Las contraseñas no coinciden',
+    saving:'Guardando...', passwordUpdated:'✓ Contraseña actualizada'
+  },
+  en: {
+    langBtn:'ES', realtime:'Real-time monitoring', headline:'Control every<br><span>feed bin.</span>',
+    welcomeBody:'Levels, consumption, and replenishment for the whole operation — live from any device.',
+    enter:'Enter', tagline:'Colfax Farm · Feed Bin System', loginTitle:'Sign in',
+    loginSub:'Use your Colfax credentials.', user:'User', password:'Password', userPlaceholder:'user',
+    loginError:'Incorrect user or password', loginAction:'Log in', version:'FeedBins v4.0 · 8-hour session',
+    loading:'Loading...', verifying:'Checking...', missingLogin:'Enter user and password',
+    binsTab:'📊 BINS', readingsTab:'📋 READINGS', orderTab:'🛒 ORDER', compareTab:'📈 COMPARISON',
+    usersTab:'⚙️ USERS', total:'Total', avg:'Avg.', critical:'Critical', closed:'Closed',
+    sendRound:'✉ Send round', summary22:'📊 22-BIN SUMMARY', history:'📋 HISTORY',
+    currentLevels:'Current levels — all bins', savedReadings:'Saved readings by date', clear:'🗑 Clear',
+    foodOrder:'Feed Order', autofill:'⚡ Auto-fill',
+    orderHint:'Enter tons to order. ⚡ Auto-fill calculates enough to fill each bin to 100%.',
+    readonlyOrderHint:'Pending order view (read-only)', saveOrder:'SAVE ORDER', sessionUser:'User:',
+    logout:'Log out', back:'← Back', all:'All', gestation:'Gestation', breeding:'Breeding',
+    lactation:'Lactation', criticalFilter:'Critical', closedFilter:'Closed', noReadings:'No readings',
+    noSavedReadings:'No saved readings yet.', by:'by', readonlyMode:'👁 Read-only mode',
+    open:'🟢 OPEN', closedStatus:'🔴 CLOSED', capacity:'Capacity', inventory:'Inventory',
+    barn:'Barn', group:'Group', lastReading:'Last reading', notes:'Notes', notesPlaceholder:'Observations...',
+    readingEntered:'✓ Reading entered — edit', markReady:'✓ MARK AS READY',
+    roundNotice:'After finishing all bins, press <strong>SAVE ROUND</strong> from the list',
+    saved:'saved', readyToSave:'ready to save', noPermissionStatus:'No permission to change status',
+    noPermissionSave:'No permission to save readings', noPermission:'No permission', confirmLogout:'Log out?',
+    current:'Current', free:'free', openPlain:'Open', closedPlain:'Closed', totals22:'TOTALS — 22 BINS',
+    totalCapacity:'TOTAL CAPACITY', totalInventory:'TOTAL INVENTORY', freeSpace:'FREE SPACE',
+    globalAverage:'GLOBAL AVERAGE', summaryCsvDownloaded:'Summary CSV downloaded', csvDownloaded:'CSV downloaded',
+    noCsv:'No readings to export', adminOnlyHistory:'Only admin can delete history',
+    confirmClearHistory:'Delete all history?', historyDeleted:'History deleted', actual:'Current',
+    space:'Space', orderSummary:'Order Summary', tons:'tons', orderCleaned:'Order cleared',
+    enterAmount:'Enter at least one amount', orderSaved:'Order saved', autofillDone:'✓ Auto-fill calculated',
+    compare:'Comparison', compareSub:'Current reading vs feed order', globalAvg:'global average',
+    ordered:'ORDERED', overfilled:'overfilled', noOrder:'not ordered', requested:'ordered',
+    now:'now', postDelivery:'POST-DELIVERY', difference:'DIFFERENCE', excess:'EXCESS',
+    noOrderForBin:'— No order registered for this bin', totalOrdered:'TOTAL ORDERED',
+    estimatedPost:'ESTIMATED POST-DELIVERY LEVEL', globalPost:'Global post-delivery average',
+    saveRound:'✉ SAVE ROUND', noPendingReadings:'No pending readings', roundSaved:'Round saved',
+    readingsRegistered:'registered', errorSavingRound:'Error saving round', userManagement:'User Management',
+    add:'+ Add', rolesPerms:'Roles and Permissions', adminPerm:'■ ADMIN — Everything: bins, readings, order, users',
+    managerPerm:'■ MANAGER — Can save readings, change status, and create orders',
+    operatorPerm:'■ OPERATOR — Can view and save readings, change open/closed status',
+    visitorPerm:'■ VISITOR — Read-only, cannot save or modify', session8:'⏱ Session: 8 hours per shift',
+    editUser:'Edit User', newUser:'New User', fullName:'Full name', loginUser:'User (login)',
+    passwordsFirebase:'🔒 Passwords are managed in Firebase Console.',
+    resetPasswordHelp:'To change it: Authentication → Users → Reset password.',
+    createPasswordHelp:'When creating, go to Firebase Console → Authentication → Add user with email:',
+    role:'Role', manager:'Manager', operator:'Operator', visitor:'Visitor', admin:'Administrator',
+    color:'Color', cancel:'Cancel', save:'Save', requiredUser:'Name and user are required',
+    duplicateUser:'That user already exists', userUpdated:'User updated',
+    profileCreated:'✓ Profile created. Remember to create the account in Firebase Console.',
+    noDeleteSelf:'You cannot delete yourself', confirmDeleteUser:'Delete user',
+    userDeleted:'User deleted', userMenuAdmin:'User management', changePassword:'Change password',
+    newPassword:'New password', confirmPassword:'Confirm password', minPassword:'Minimum 6 characters',
+    repeatPassword:'Repeat password', passwordsNoMatch:'Passwords do not match',
+    saving:'Saving...', passwordUpdated:'✓ Password updated'
+  }
+};
+let lang = localStorage.getItem('fb-lang') || 'en';
+function t(key){ return (LANG[lang] && LANG[lang][key]) || LANG.es[key] || key; }
+function groupLabel(group){
+  if(group==='Gestación') return t('gestation');
+  if(group==='Lactación') return t('lactation');
+  return t('breeding');
+}
+function filterLabel(filter){
+  if(filter==='Todos') return t('all');
+  if(filter==='Gestación') return t('gestation');
+  if(filter==='Lactación') return t('lactation');
+  if(filter==='Breeding') return t('breeding');
+  if(filter==='Críticos') return t('criticalFilter');
+  if(filter==='Cerrados') return t('closedFilter');
+  return filter;
+}
+function roleLabel(role){
+  return role==='encargado'?t('manager'):role==='operador'?t('operator'):role==='visitante'?t('visitor'):role==='admin'?t('admin'):role;
+}
+function setText(sel,key){ const el=document.querySelector(sel); if(el) el.textContent=t(key); }
+function setHTML(sel,key){ const el=document.querySelector(sel); if(el) el.innerHTML=t(key); }
+function setPlaceholder(sel,key){ const el=document.querySelector(sel); if(el) el.placeholder=t(key); }
+function applyLang(){
+  document.documentElement.lang = lang;
+  ['#lang-btn','#app-lang-btn'].forEach(sel=>setText(sel,'langBtn'));
+  const eyebrow=document.querySelector('.ls-eyebrow');
+  if(eyebrow) eyebrow.innerHTML='<span class="ls-eyebrow-dot"></span>'+t('realtime');
+  setHTML('.ls-headline','headline');
+  setText('.ls-body','welcomeBody');
+  setText('#ls-welcome .ls-btn-primary','enter');
+  setText('.ls-tagline','tagline');
+  setText('.ls-form-title','loginTitle');
+  setText('.ls-form-sub','loginSub');
+  const loginLabels=document.querySelectorAll('#ls-form .ls-lbl');
+  if(loginLabels[0]) loginLabels[0].textContent=t('user');
+  if(loginLabels[1]) loginLabels[1].textContent=t('password');
+  setPlaceholder('#inp-user','userPlaceholder');
+  setText('#login-error','loginError');
+  setText('#ls-form .ls-btn-primary','loginAction');
+  setText('.ls-version','version');
+  setText('#tab-bins','binsTab');
+  setText('#tab-lecturas','readingsTab');
+  setText('#tab-orden','orderTab');
+  setText('#tab-comparativa','compareTab');
+  setText('#tab-admin','usersTab');
+  const sumLabels=document.querySelectorAll('.sum-lbl');
+  ['total','avg','critical','closed'].forEach((key,i)=>{ if(sumLabels[i]) sumLabels[i].textContent=t(key); });
+  setText('#btn-enviar-ronda','sendRound');
+  setText('#lsub-resumen','summary22');
+  setText('#lsub-historial','history');
+  setText('#view-lecturas #lview-resumen > div:first-child > div:first-child','currentLevels');
+  setText('#view-lecturas #lview-historial > div:first-child > div:first-child','savedReadings');
+  setText('#btn-clear-hist','clear');
+  setText('#view-orden .tbl-title','foodOrder');
+  setText('#btn-autofill','autofill');
+  setText('#btn-clearorder','clear');
+  setText('#order-hint',can('canOrder')? 'orderHint':'readonlyOrderHint');
+  setText('#btn-saveorder','saveOrder');
+  const sess=document.querySelector('#session-bar span:first-child'); if(sess) sess.textContent=t('sessionUser');
+  setText('#session-logout','logout');
+  setText('.fs-back-btn','back');
+  if(currentUser){
+    const rb=document.getElementById('topbar-role');
+    if(rb) rb.textContent=roleLabel(currentUser.role).toUpperCase();
+    renderFilters();
+    renderBins();
+    updateEnviarBtn();
+    if(currentTab==='lecturas'){ renderResumen(); renderLecturas(); }
+    if(currentTab==='orden') renderOrder();
+    if(currentTab==='comparativa') renderComparativa();
+    if(currentTab==='admin') renderAdmin();
+  }
+}
+function toggleLang(e){
+  if(e) e.stopPropagation();
+  lang = lang === 'en' ? 'es' : 'en';
+  localStorage.setItem('fb-lang', lang);
+  applyLang();
+}
+document.addEventListener('DOMContentLoaded', applyLang);
 
 // ════════════════════════════════════════════
-//  AUTH SYSTEM
-//  NOTE: For a production app with real security,
-//  passwords should be verified server-side.
-//  This is client-side protection suitable for
-//  internal farm use without a backend server.
+//  AUTH SYSTEM — Firebase Authentication
+//  Contraseñas gestionadas por Firebase Auth.
+//  Username → email: usuario@feedbinscolfax.app
 // ════════════════════════════════════════════
 
-const SESSION_MS = 8 * 60 * 60 * 1000; // 8 hours
-
-// Default users — admin can add/edit/delete in the app
+// Perfiles de usuario (sin contraseñas — las gestiona Firebase Auth)
 const defaultUsers = [
-  { id:'u1', name:'Administrador', username:'admin',    password:'Colfax2024!', role:'admin',     color:'#8e44ad', active:true },
-  { id:'u2', name:'Operador 1',    username:'operador1', password:'Op1colfax',   role:'operador',  color:'#27ae60', active:true },
-  { id:'u3', name:'Operador 2',    username:'operador2', password:'Op2colfax',   role:'operador',  color:'#27ae60', active:true },
-  { id:'u4', name:'Visitante',     username:'visitante', password:'Ver2024',     role:'visitante', color:'#2980b9', active:true },
+  { id:'u1', name:'Administrador', username:'admin',     role:'admin',     color:'#8e44ad', active:true },
+  { id:'u2', name:'Maria',         username:'maria',     role:'operador',  color:'#27ae60', active:true },
+  { id:'u3', name:'Ricardo',       username:'ricardo',   role:'operador',  color:'#2980b9', active:true },
+  { id:'u4', name:'Abidan',        username:'abidan',    role:'operador',  color:'#e67e22', active:true },
+  { id:'u5', name:'Visitante',     username:'visitante', role:'visitante', color:'#4e5f7a', active:true },
 ];
 
 function loadUsers(){
@@ -496,34 +830,61 @@ function loadUsers(){
   return defaultUsers.map(u=>({...u}));
 }
 function saveUsers(){
-  try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
-  if(typeof db!=='undefined') db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users save error',e));
+  // Strip any legacy password fields before saving to Firestore
+  const safeUsers = users.map(({password, ...u}) => u);
+  try{ localStorage.setItem('fb-v4-users', JSON.stringify(safeUsers)); }catch(e){}
+  db.collection('users').doc('list').set({users: safeUsers}).catch(e=>console.warn('FB users save error',e));
 }
 
 let users = loadUsers();
-// Load users from Firestore before login so all devices share the same user list
+// Load user profiles from Firestore
 (()=>{
-  const loginBtn = document.querySelector('.login-btn');
-  if(loginBtn){ loginBtn.disabled=true; loginBtn.textContent='Cargando...'; }
+  const loginBtn = document.querySelector('#ls-welcome .ls-btn-primary');
+  if(loginBtn){ loginBtn.disabled=true; loginBtn.textContent=t('loading'); }
   db.collection('users').doc('list').get().then(doc=>{
     if(doc.exists && doc.data().users && doc.data().users.length){
-      users = doc.data().users;
+      // Strip any legacy passwords from Firestore data
+      users = doc.data().users.map(({password, ...u}) => u);
       try{ localStorage.setItem('fb-v4-users', JSON.stringify(users)); }catch(e){}
     } else {
       db.collection('users').doc('list').set({users}).catch(e=>console.warn('FB users init error',e));
     }
   }).catch(e=>console.warn('FB users load error',e))
   .finally(()=>{
-    if(loginBtn){ loginBtn.disabled=false; loginBtn.textContent='Entrar'; }
+    if(loginBtn){ loginBtn.disabled=false; loginBtn.textContent=t('enter'); }
   });
 })();
 let currentUser = null; // {id, name, username, role, color}
-let sessionExpiry = 0;
+
+// ── Firebase Auth state ──
+auth.onAuthStateChanged(fbUser => {
+  if(fbUser){
+    const username = fbUser.email.replace('@feedbinscolfax.app','');
+    const profile = users.find(u => u.username.toLowerCase() === username && u.active);
+    if(!profile){ auth.signOut(); return; }
+    currentUser = { id:profile.id, name:profile.name, username:profile.username, role:profile.role, color:profile.color };
+    try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser})); }catch(e){}
+    if(document.getElementById('app').style.display !== 'flex'){
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      onLoginSuccess();
+    }
+  } else {
+    currentUser = null;
+    try{ localStorage.removeItem('fb-v4-session'); }catch(e){}
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('inp-user').value = '';
+    document.getElementById('inp-pass').value = '';
+    if(typeof showWelcomeScreen === 'function') showWelcomeScreen();
+  }
+});
 
 // Role permissions
 const PERMS = {
   admin:     { canSave:true,  canToggle:true,  canOrder:true,  canAdmin:true,  canDeleteHist:true },
   operador:  { canSave:true,  canToggle:true,  canOrder:false, canAdmin:false, canDeleteHist:false },
+  encargado: { canSave:true,  canToggle:true,  canOrder:true,  canAdmin:false, canDeleteHist:false },
   visitante: { canSave:false, canToggle:false, canOrder:false, canAdmin:false, canDeleteHist:false },
 };
 function can(perm){ return currentUser && PERMS[currentUser.role]?.[perm]; }
@@ -531,49 +892,41 @@ function can(perm){ return currentUser && PERMS[currentUser.role]?.[perm]; }
 function initials(name){ return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 
 // ── LOGIN ──
-function doLogin(){
+async function doLogin(){
   const uval = document.getElementById('inp-user').value.trim().toLowerCase();
   const pval = document.getElementById('inp-pass').value;
   const errEl = document.getElementById('login-error');
-  const user = users.find(u => u.username.toLowerCase()===uval && u.password===pval && u.active);
-  if(!user){
+  const loginBtn = document.querySelector('#ls-form .ls-btn-primary');
+
+  if(!uval || !pval){
+    errEl.textContent = t('missingLogin');
     errEl.classList.add('show');
-    document.getElementById('inp-pass').value='';
-    document.getElementById('inp-pass').classList.add('error');
-    setTimeout(()=>{ errEl.classList.remove('show'); document.getElementById('inp-pass').classList.remove('error'); }, 2500);
+    setTimeout(()=>errEl.classList.remove('show'), 2000);
     return;
   }
-  currentUser = { id:user.id, name:user.name, username:user.username, role:user.role, color:user.color };
-  sessionExpiry = Date.now() + SESSION_MS;
-  try{ localStorage.setItem('fb-v4-session', JSON.stringify({user:currentUser, expiry:sessionExpiry})); }catch(e){}
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  onLoginSuccess();
-}
 
-function restoreSession(){
-  try{
-    const s = localStorage.getItem('fb-v4-session');
-    if(!s) return false;
-    const {user, expiry} = JSON.parse(s);
-    if(Date.now() > expiry) return false;
-    // Verify user still exists and is active
-    const dbUser = users.find(u=>u.id===user.id && u.active);
-    if(!dbUser) return false;
-    currentUser = { id:dbUser.id, name:dbUser.name, username:dbUser.username, role:dbUser.role, color:dbUser.color };
-    sessionExpiry = expiry;
-    return true;
-  }catch(e){ return false; }
+  if(loginBtn){ loginBtn.disabled=true; loginBtn.textContent=t('verifying'); }
+
+  try {
+    const email = uval + '@feedbinscolfax.app';
+    await auth.signInWithEmailAndPassword(email, pval);
+    // onAuthStateChanged handles showing the app
+  } catch(e) {
+    errEl.textContent = t('loginError');
+    errEl.classList.add('show');
+    document.getElementById('inp-pass').value = '';
+    document.getElementById('inp-pass').classList.add('error');
+    setTimeout(()=>{
+      errEl.classList.remove('show');
+      document.getElementById('inp-pass').classList.remove('error');
+    }, 2500);
+    if(loginBtn){ loginBtn.disabled=false; loginBtn.textContent=t('loginAction'); }
+  }
 }
 
 function doLogout(){
-  if(!confirm('¿Cerrar sesión?')) return;
-  currentUser=null; sessionExpiry=0;
-  try{ localStorage.removeItem('fb-v4-session'); }catch(e){}
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('inp-user').value='';
-  document.getElementById('inp-pass').value='';
+  if(!confirm(t('confirmLogout'))) return;
+  auth.signOut(); // onAuthStateChanged handles UI reset
 }
 
 // ════════════════════════════════════════════
@@ -640,7 +993,7 @@ function onLoginSuccess(){
   av.style.background = currentUser.color;
   document.getElementById('topbar-username').textContent = currentUser.name.split(' ')[0];
   const rb = document.getElementById('topbar-role');
-  rb.textContent = currentUser.role.toUpperCase();
+  rb.textContent = roleLabel(currentUser.role).toUpperCase();
   rb.className = 'user-role-badge role-'+currentUser.role;
 
   // Show/hide admin tab
@@ -656,7 +1009,7 @@ function onLoginSuccess(){
     if(btnAF) btnAF.style.display='none';
     if(btnCO) btnCO.style.display='none';
     if(btnSO) btnSO.style.display='none';
-    if(orderHint) orderHint.textContent='Vista de la orden pendiente (solo lectura)';
+    if(orderHint) orderHint.textContent=t('readonlyOrderHint');
   }
 
   // Show/hide delete history
@@ -668,20 +1021,14 @@ function onLoginSuccess(){
   renderBins();
   switchTab('bins');
   initFirestoreSync();
+  applyLang();
 }
 
 // Session countdown
 function updateSessionBar(){
   if(!currentUser) return;
-  const remaining = sessionExpiry - Date.now();
-  if(remaining <= 0){ doLogout(); return; }
-  const h=Math.floor(remaining/3600000);
-  const m=Math.floor((remaining%3600000)/60000);
-  const s=Math.floor((remaining%60000)/1000);
-  const txt = h>0 ? `${h}h ${m}m` : m>0 ? `${m}m ${s}s` : `${s}s`;
-  document.getElementById('session-countdown').textContent = txt;
-  const bar = document.getElementById('session-bar');
-  bar.className = 'session-bar' + (remaining < 600000 ? ' warn' : '');
+  const el = document.getElementById('session-countdown');
+  if(el) el.textContent = currentUser.username;
 }
 
 // ════════════════════════════════════════════
@@ -794,13 +1141,13 @@ function updateSummary(visible){
 function renderFilters(){
   const fr=document.getElementById('frow');fr.innerHTML='';
   filters.forEach(f=>{
-    const t=document.createElement('div');
-    t.className='ftag'+(f===activeFilter?' on':'');
+    const tag=document.createElement('div');
+    tag.className='ftag'+(f===activeFilter?' on':'');
     const crit=allBins.filter(b=>b.level<20).length;
     const closed=allBins.filter(b=>!b.isOpen).length;
-    t.textContent=f==='Críticos'?`Críticos (${crit})`:f==='Cerrados'?`Cerrados (${closed})`:f;
-    t.onclick=()=>{activeFilter=f;expanded=null;renderFilters();renderBins()};
-    fr.appendChild(t);
+    tag.textContent=f==='Críticos'?`${t('criticalFilter')} (${crit})`:f==='Cerrados'?`${t('closedFilter')} (${closed})`:filterLabel(f);
+    tag.onclick=()=>{activeFilter=f;expanded=null;renderFilters();renderBins()};
+    fr.appendChild(tag);
   });
 }
 
@@ -831,7 +1178,7 @@ function onSlide(binId,val){
 
 // ── TOGGLE STATUS ──
 function toggleStatus(binId, isOpen){
-  if(!can('canToggle')){ showToast('Sin permiso para cambiar estado','err'); return; }
+  if(!can('canToggle')){ showToast(t('noPermissionStatus'),'err'); return; }
   const bin=allBins.find(b=>b.id===binId);if(!bin)return;
   bin.isOpen=isOpen;saveSingleBin(bin);
   const card=document.querySelector(`[data-binid="${binId}"]`);
@@ -845,12 +1192,12 @@ function toggleStatus(binId, isOpen){
   if(oBtn) oBtn.className='t-opt open-opt'+(isOpen?' active':'');
   if(cBtn) cBtn.className='t-opt close-opt'+(!isOpen?' active':'');
   updateSummary(getVisible());renderFilters();
-  showToast(bin.name+' — '+(isOpen?'🟢 ABIERTO':'🔴 CERRADO'));
+  showToast(bin.name+' — '+(isOpen?t('open'):t('closedStatus')));
 }
 
 // ── SAVE LEVEL ──
 function saveLevel(binId){
-  if(!can('canSave')){ showToast('Sin permiso para guardar lecturas','err'); return; }
+  if(!can('canSave')){ showToast(t('noPermissionSave'),'err'); return; }
   const bin=allBins.find(b=>b.id===binId);if(!bin)return;
   const notesEl=document.getElementById('notes-'+binId);
   if(notesEl) bin.notes=notesEl.value.trim();
@@ -861,7 +1208,7 @@ function saveLevel(binId){
     isOpen:bin.isOpen,savedBy:currentUser.name,userRole:currentUser.role});
   if(history.length>1000) history=history.slice(0,1000);
   saveSingleBin(bin);saveHistData(history[0]);
-  showToast('✓ '+bin.name+' — '+bin.level+'% guardado');
+  showToast('✓ '+bin.name+' — '+bin.level+'% '+t('saved'));
   sessionReadings.add(binId);
   if(!sessionStart) sessionStart=new Date();
   updateEnviarBtn();
@@ -869,7 +1216,7 @@ function saveLevel(binId){
   const card=document.querySelector(`[data-binid="${binId}"]`);
   if(card){
     const tsEl=card.querySelector('.bin-ts');if(tsEl) tsEl.textContent='⏱ '+fmtTs(bin.ts);
-    const whoEl=card.querySelector('.bin-who');if(whoEl) whoEl.textContent='por '+currentUser.name;
+    const whoEl=card.querySelector('.bin-who');if(whoEl) whoEl.textContent=t('by')+' '+currentUser.name;
   }
 }
 
@@ -897,7 +1244,7 @@ function marcarListo(binId){
   bin.level=level;bin.notes=notes;
   pendientes[binId]={level,notes};
   if(!sessionStart)sessionStart=new Date();
-  showToast('✓ '+bin.name+' — lista para guardar');
+  showToast('✓ '+bin.name+' — '+t('readyToSave'));
   closeBinFS();
   renderBins();renderFilters();updateEnviarBtn();
 }
@@ -921,8 +1268,8 @@ function buildCardHTML(bin){
     <div class="bin-mid">
       <div class="bin-name">${bin.name}<span class="barn-tag">${bin.barn}</span></div>
       <div class="bin-diet">${bin.diet}</div>
-      <div class="bin-ts">${bin.ts?'⏱ '+fmtTs(bin.ts):'Sin lecturas'}</div>
-      ${bin.savedBy?`<div class="bin-who">por ${bin.savedBy}</div>`:''}
+      <div class="bin-ts">${bin.ts?'⏱ '+fmtTs(bin.ts):t('noReadings')}</div>
+      ${bin.savedBy?`<div class="bin-who">${t('by')} ${bin.savedBy}</div>`:''}
       ${bin.notes?`<div class="badges"><span class="nbadge">${bin.notes}</span></div>`:''}
     </div>
     <div class="bin-right">
@@ -938,7 +1285,7 @@ function buildExpandHTML(bin){
   const color=col(bin.level);const inv=(bin.cap*bin.level/100).toFixed(2);
   const ro=!can('canSave');
   return `<div class="expand-body">
-    ${ro?`<div class="readonly-banner">👁 Modo solo lectura — ${currentUser.role}</div>`:''}
+    ${ro?`<div class="readonly-banner">${t('readonlyMode')} — ${roleLabel(currentUser.role)}</div>`:''}
     <div class="level-control">
       <div class="v-slider-col">
         <div class="v-slider-lbl">100%</div>
@@ -960,28 +1307,28 @@ function buildExpandHTML(bin){
       <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-width:0">
         <div class="toggle-btn" style="width:100%">
           <div class="t-opt open-opt${bin.isOpen?' active':''}${!can('canToggle')?' disabled-opt':''}" id="topen-${bin.id}" style="flex:1;text-align:center"
-            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},true)`:''}">🟢 ABIERTO</div>
+            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},true)`:''}">${t('open')}</div>
           <div class="t-opt close-opt${!bin.isOpen?' active':''}${!can('canToggle')?' disabled-opt':''}" id="tclose-${bin.id}" style="flex:1;text-align:center"
-            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},false)`:''}">🔴 CERRADO</div>
+            onclick="event.stopPropagation();${can('canToggle')?`toggleStatus(${bin.id},false)`:''}">${t('closedStatus')}</div>
         </div>
-        <div class="mi" style="text-align:center"><div class="lbl">Capacidad</div><div class="val">${bin.cap} ton</div></div>
-        <div class="mi" style="text-align:center"><div class="lbl">Inventario</div><div class="val">${inv} t</div></div>
-        <div class="mi" style="text-align:center"><div class="lbl">Bodega</div><div class="val">${bin.barn}</div></div>
-        <div class="mi" style="text-align:center"><div class="lbl">Grupo</div><div class="val">${bin.group}</div></div>
+        <div class="mi" style="text-align:center"><div class="lbl">${t('capacity')}</div><div class="val">${bin.cap} ton</div></div>
+        <div class="mi" style="text-align:center"><div class="lbl">${t('inventory')}</div><div class="val">${inv} t</div></div>
+        <div class="mi" style="text-align:center"><div class="lbl">${t('barn')}</div><div class="val">${bin.barn}</div></div>
+        <div class="mi" style="text-align:center"><div class="lbl">${t('group')}</div><div class="val">${groupLabel(bin.group)}</div></div>
       </div>
     </div>
     <div class="meta-grid">
-      <div class="mi full"><div class="lbl">Última lectura</div><div class="val">${fmtTs(bin.ts)}${bin.savedBy?' · '+bin.savedBy:''}</div></div>
+      <div class="mi full"><div class="lbl">${t('lastReading')}</div><div class="val">${fmtTs(bin.ts)}${bin.savedBy?' · '+bin.savedBy:''}</div></div>
     </div>
     <div class="notes-row">
-      <div class="notes-lbl">Notas</div>
-      <textarea class="notes-input" id="notes-${bin.id}" placeholder="Observaciones…" ${ro?'disabled':''}>${bin.notes||''}</textarea>
+      <div class="notes-lbl">${t('notes')}</div>
+      <textarea class="notes-input" id="notes-${bin.id}" placeholder="${t('notesPlaceholder')}" ${ro?'disabled':''}>${bin.notes||''}</textarea>
     </div>
     ${!ro?`
       <button class="btn-listo ${pendientes[bin.id]?'ya-listo':'pendiente-btn'}" onclick="event.stopPropagation();marcarListo(${bin.id})">
-        ${pendientes[bin.id]?'✓ Lectura ingresada — editar':'✓ MARCAR COMO LISTA'}
+        ${pendientes[bin.id]?t('readingEntered'):t('markReady')}
       </button>
-      <div class="aviso-ronda">Al terminar todos los bins, presiona <strong>GUARDAR RONDA</strong> desde la lista</div>
+      <div class="aviso-ronda">${t('roundNotice')}</div>
     `:''}
   </div>`;
 }
@@ -1020,7 +1367,7 @@ function renderBins(){
       lastGroup=def.group;
       const gh=document.createElement('div');gh.className='group-hdr';
       const desc=def.group==='Gestación'?'Bins 1–8 · G1–G4':def.group==='Breeding'?'Bins 9–14 · B1/B2, B3/B4':'Bins 15–22 · F1–F4';
-      gh.innerHTML=`<span>${def.group}</span><span>${desc}</span>`;
+      gh.innerHTML=`<span>${groupLabel(def.group)}</span><span>${desc}</span>`;
       list.appendChild(gh);
     }
 
@@ -1034,7 +1381,7 @@ function renderBins(){
     if(groupBins.length>1){
       // Render as tandem group box
       const tg=document.createElement('div');tg.className='tandem-group';
-      tg.innerHTML=`<div class="tandem-label">Bodega ${def.barn} — ${groupBins.map(b=>b.name).join(' + ')}</div>`;
+      tg.innerHTML=`<div class="tandem-label">${t('barn')} ${def.barn} — ${groupBins.map(b=>b.name).join(' + ')}</div>`;
       groupBins.forEach(b=>tg.appendChild(createBinCard(b)));
       list.appendChild(tg);
     } else {
@@ -1084,15 +1431,15 @@ function renderResumen(){
       <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:var(--green)">22</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;text-align:center">
-      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Prom.</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${t('avg')}</div>
       <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:${col(avgPct)}">${avgPct}%</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;text-align:center">
-      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Críticos</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${t('criticalFilter')}</div>
       <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:var(--red)">${crit}</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;text-align:center">
-      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Cerrados</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${t('closedFilter')}</div>
       <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:var(--blue)">${closed}</div>
     </div>
   </div>`;
@@ -1109,7 +1456,7 @@ function renderResumen(){
       lastGrp=bin.group;
       const desc=lastGrp==='Gestación'?'Bins 1–8':lastGrp==='Breeding'?'Bins 9–14':'Bins 15–22';
       html+=`<div style="font-family:var(--mono);font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;padding:10px 2px 4px;border-bottom:.5px solid var(--border);margin-bottom:5px;display:flex;justify-content:space-between">
-        <span>${lastGrp}</span><span style="color:var(--muted)">${desc}</span>
+        <span>${groupLabel(lastGrp)}</span><span style="color:var(--muted)">${desc}</span>
       </div>`;
     }
 
@@ -1135,7 +1482,7 @@ function renderResumen(){
           <div style="width:${bin.level}%;height:100%;background:${color};opacity:.88;border-radius:3px"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:2px">
-          <span style="font-family:var(--mono);font-size:7px;color:var(--yellow)">libre: ${space}t</span>
+          <span style="font-family:var(--mono);font-size:7px;color:var(--yellow)">${t('free')}: ${space}t</span>
           ${bin.notes?`<span style="font-family:var(--mono);font-size:7px;color:var(--yellow)">${bin.notes}</span>`:''}
         </div>
       </div>
@@ -1145,23 +1492,23 @@ function renderResumen(){
         ${bin.ts
           ?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted2)">⏱ ${fmtTs(bin.ts)}</div>
              ${bin.savedBy?`<div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${bin.savedBy}</div>`:''}` 
-          :`<div style="font-family:var(--mono);font-size:8px;color:var(--muted)">Sin lecturas</div>`}
-        <div style="font-family:var(--mono);font-size:7px;color:${bin.isOpen?'var(--green)':'var(--red)'};margin-top:2px">${bin.isOpen?'Abierto':'Cerrado'}</div>
+          :`<div style="font-family:var(--mono);font-size:8px;color:var(--muted)">${t('noReadings')}</div>`}
+        <div style="font-family:var(--mono);font-size:7px;color:${bin.isOpen?'var(--green)':'var(--red)'};margin-top:2px">${bin.isOpen?t('openPlain'):t('closedPlain')}</div>
       </div>
     </div>`;
   });
 
   // ── Totals footer ──
   html+=`<div style="background:var(--green-dim);border:1px solid var(--green);border-radius:8px;padding:10px 12px;margin-top:4px;display:flex;flex-direction:column;gap:5px">
-    <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES — 22 BINS</div>
+    <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--green);letter-spacing:.8px">${t('totals22')}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 10px">
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">CAPACIDAD TOTAL</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('totalCapacity')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)">${totalCap.toFixed(0)} ton</div></div>
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">INVENTARIO TOTAL</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('totalInventory')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green)">${totalInv.toFixed(1)} ton</div></div>
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">ESPACIO LIBRE</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('freeSpace')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--yellow)">${(totalCap-totalInv).toFixed(1)} ton</div></div>
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">PROMEDIO GLOBAL</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('globalAverage')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:${col(avgPct)}">${avgPct}%</div></div>
     </div>
   </div>`;
@@ -1172,11 +1519,13 @@ function renderResumen(){
 // ── EXPORT RESUMEN CSV (los 22 bins actuales) ──
 function exportResumenCSV(){
   const sorted=[...allBins].sort((a,b)=>a.id-b.id);
-  const rows=[['Bin','Bodega','Grupo','Dieta','Capacidad(ton)','Nivel%','Inventario(ton)','Espacio(ton)','Estado','Notas','Última lectura','Guardado por']];
+  const rows=[lang==='es'
+    ? ['Bin','Bodega','Grupo','Dieta','Capacidad(ton)','Nivel%','Inventario(ton)','Espacio(ton)','Estado','Notas','Última lectura','Guardado por']
+    : ['Bin','Barn','Group','Diet','Capacity(ton)','Level%','Inventory(ton)','Space(ton)','Status','Notes','Last reading','Saved by']];
   sorted.forEach(b=>{
     const inv=(b.cap*b.level/100).toFixed(2);
     const space=Math.max(0,b.cap-b.cap*b.level/100).toFixed(2);
-    rows.push([b.name,b.barn,b.group,b.diet,b.cap,b.level,inv,space,b.isOpen?'Abierto':'Cerrado',b.notes||'',b.ts?fmtTs(b.ts):'—',b.savedBy||'—']);
+    rows.push([b.name,b.barn,groupLabel(b.group),b.diet,b.cap,b.level,inv,space,b.isOpen?t('openPlain'):t('closedPlain'),b.notes||'',b.ts?fmtTs(b.ts):'—',b.savedBy||'—']);
   });
   const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1184,14 +1533,14 @@ function exportResumenCSV(){
   const a=document.createElement('a');a.href=url;
   a.download='feedbins-resumen-'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();URL.revokeObjectURL(url);
-  showToast('CSV de resumen descargado');
+  showToast(t('summaryCsvDownloaded'));
 }
 
 // ── LECTURAS TABLE ──
 function renderLecturas(){
   const wrap=document.getElementById('lecturas-wrap');
-  if(!history.length){wrap.innerHTML='<div class="tbl-empty">Sin lecturas guardadas aún.</div>';return}
-  let html=`<table><thead><tr><th>Bin</th><th>Fecha/Hora</th><th>Niv.</th><th>Δ</th><th>Ton</th><th>Estado</th><th>Usuario</th></tr></thead><tbody>`;
+  if(!history.length){wrap.innerHTML=`<div class="tbl-empty">${t('noSavedReadings')}</div>`;return}
+  let html=`<table><thead><tr><th>Bin</th><th>Fecha/Hora</th><th>Niv.</th><th>Δ</th><th>Ton</th><th>${lang==='es'?'Estado':'Status'}</th><th>${t('user')}</th></tr></thead><tbody>`;
   history.forEach(h=>{
     const color=col(h.level);
     const delta=h.level-(h.prevLevel||h.level);
@@ -1205,7 +1554,7 @@ function renderLecturas(){
       <td style="color:${color};font-weight:600">${h.level}%</td>
       <td style="color:${deltaCol};font-weight:600">${deltaStr}</td>
       <td class="td-muted">${inv}t</td>
-      <td>${h.isOpen!==false?'<span class="td-status-open">● Abierto</span>':'<span class="td-status-closed">● Cerrado</span>'}</td>
+      <td>${h.isOpen!==false?`<span class="td-status-open">● ${t('openPlain')}</span>`:`<span class="td-status-closed">● ${t('closedPlain')}</span>`}</td>
       <td class="td-muted" style="white-space:nowrap">${h.savedBy||'—'}</td>
     </tr>`;
   });
@@ -1213,18 +1562,20 @@ function renderLecturas(){
   wrap.innerHTML=html;
 }
 function clearHistory(){
-  if(!can('canDeleteHist')){showToast('Solo el admin puede eliminar historial','err');return}
-  if(!confirm('¿Eliminar todo el historial?'))return;
-  history=[];saveHistData();renderLecturas();showToast('Historial eliminado');
+  if(!can('canDeleteHist')){showToast(t('adminOnlyHistory'),'err');return}
+  if(!confirm(t('confirmClearHistory')))return;
+  history=[];saveHistData();renderLecturas();showToast(t('historyDeleted'));
 }
 function exportCSV(){
-  if(!history.length){showToast('Sin lecturas para exportar');return}
-  const rows=[['Bin','Bodega','Grupo','Fecha','Hora','Nivel%','Delta%','Ton','Notas','Estado','Guardado por']];
+  if(!history.length){showToast(t('noCsv'));return}
+  const rows=[lang==='es'
+    ? ['Bin','Bodega','Grupo','Fecha','Hora','Nivel%','Delta%','Ton','Notas','Estado','Guardado por']
+    : ['Bin','Barn','Group','Date','Time','Level%','Delta%','Ton','Notes','Status','Saved by']];
   history.forEach(h=>{
     const d=new Date(h.ts);
     const delta=h.level-(h.prevLevel||h.level);
     const inv=(h.cap*h.level/100).toFixed(2);
-    rows.push([h.binName,h.barn,h.group,d.toLocaleDateString('es-MX'),d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),h.level,delta,inv,h.notes||'',h.isOpen!==false?'Abierto':'Cerrado',h.savedBy||'']);
+    rows.push([h.binName,h.barn,groupLabel(h.group),d.toLocaleDateString('es-MX'),d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),h.level,delta,inv,h.notes||'',h.isOpen!==false?t('openPlain'):t('closedPlain'),h.savedBy||'']);
   });
   const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
@@ -1232,7 +1583,7 @@ function exportCSV(){
   const a=document.createElement('a');a.href=url;
   a.download='feedbins-lecturas-'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();URL.revokeObjectURL(url);
-  showToast('CSV descargado');
+  showToast(t('csvDownloaded'));
 }
 
 // ── ORDER — sort bins 1→22 ──
@@ -1250,7 +1601,7 @@ function renderOrder(){
       <div style="flex:1;min-width:0">
         <div class="order-bin-name">${bin.name} <span style="font-family:var(--mono);font-size:8px;color:var(--muted2)">${bin.barn}</span></div>
         <div class="order-bin-meta">${bin.diet}</div>
-        <div class="order-bin-meta">Actual: ${inv}t/${bin.cap}t (${bin.level}%) · Espacio: <span style="color:var(--yellow)">${needed}t</span></div>
+        <div class="order-bin-meta">${t('actual')}: ${inv}t/${bin.cap}t (${bin.level}%) · ${t('space')}: <span style="color:var(--yellow)">${needed}t</span></div>
       </div>
       <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
         <input class="order-input" type="number" min="0" max="${bin.cap}" step="0.5"
@@ -1285,12 +1636,12 @@ function renderComparativa(){
   hdr.style.cssText='background:var(--s1);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0';
   hdr.innerHTML=`
     <div>
-      <div style="font-family:var(--sans);font-size:14px;font-weight:800;color:var(--text)">Comparativa</div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">Lectura actual vs Orden de alimento</div>
+      <div style="font-family:var(--sans);font-size:14px;font-weight:800;color:var(--text)">${t('compare')}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">${t('compareSub')}</div>
     </div>
     <div style="text-align:right">
       <div style="font-family:var(--mono);font-size:20px;font-weight:600;color:${col(overallPct)}">${overallPct}%</div>
-      <div style="font-family:var(--mono);font-size:8px;color:var(--muted)">promedio global</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--muted)">${t('globalAvg')}</div>
     </div>`;
   scroll.appendChild(hdr);
 
@@ -1299,15 +1650,15 @@ function renderComparativa(){
   statBar.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 10px 0;flex-shrink:0';
   statBar.innerHTML=`
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 5px;text-align:center">
-      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.5px">INVENTARIO</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.5px">${t('inventory').toUpperCase()}</div>
       <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--green)">${totalInv.toFixed(1)}t</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 5px;text-align:center">
-      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.5px">ESPACIO</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.5px">${t('space').toUpperCase()}</div>
       <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--yellow)">${totalSpace.toFixed(1)}t</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 5px;text-align:center">
-      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.5px">ORDENADO</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.5px">${t('ordered')}</div>
       <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue)">${totalOrder.toFixed(1)}t</div>
     </div>`;
   scroll.appendChild(statBar);
@@ -1316,9 +1667,9 @@ function renderComparativa(){
   if(overfill>0||lowAfter>0||noOrder>0){
     const chips=document.createElement('div');
     chips.style.cssText='display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px';
-    if(overfill>0) chips.innerHTML+=`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">⚠ ${overfill} sobrellenado${overfill>1?'s':''}</span>`;
-    if(lowAfter>0) chips.innerHTML+=`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">↑ ${lowAfter} &lt;80% post-entrega</span>`;
-    if(noOrder>0)  chips.innerHTML+=`<span style="background:rgba(78,95,122,0.15);border:0.5px solid var(--border);color:var(--muted2);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">— ${noOrder} sin pedir</span>`;
+    if(overfill>0) chips.innerHTML+=`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">⚠ ${overfill} ${t('overfilled')}${lang==='es'&&overfill>1?'s':''}</span>`;
+    if(lowAfter>0) chips.innerHTML+=`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">↑ ${lowAfter} &lt;80% ${lang==='es'?'post-entrega':'post-delivery'}</span>`;
+    if(noOrder>0)  chips.innerHTML+=`<span style="background:rgba(78,95,122,0.15);border:0.5px solid var(--border);color:var(--muted2);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px">— ${noOrder} ${t('noOrder')}</span>`;
     scroll.appendChild(chips);
   }
 
@@ -1342,10 +1693,10 @@ function renderComparativa(){
       const grpPct=Math.round(grpInv/grpCap*100);
       const gh=document.createElement('div');
       gh.style.cssText='display:flex;justify-content:space-between;padding:10px 2px 4px;border-bottom:0.5px solid var(--border);margin-bottom:4px';
-      gh.innerHTML=`<span style="font-family:var(--mono);font-size:9px;color:var(--muted2);font-weight:600;letter-spacing:1px">${def.group.toUpperCase()}</span>
+      gh.innerHTML=`<span style="font-family:var(--mono);font-size:9px;color:var(--muted2);font-weight:600;letter-spacing:1px">${groupLabel(def.group).toUpperCase()}</span>
         <span style="display:flex;gap:10px">
-          <span style="font-family:var(--mono);font-size:9px;color:${col(grpPct)};font-weight:600">${grpPct}% prom.</span>
-          ${grpOrd>0?`<span style="font-family:var(--mono);font-size:9px;color:var(--blue)">${grpOrd.toFixed(1)}t pedidas</span>`:''}
+          <span style="font-family:var(--mono);font-size:9px;color:${col(grpPct)};font-weight:600">${grpPct}% ${t('avg')}</span>
+          ${grpOrd>0?`<span style="font-family:var(--mono);font-size:9px;color:var(--blue)">${grpOrd.toFixed(1)}t ${t('requested')}</span>`:''}
         </span>`;
       innerScroll.appendChild(gh);
     }
@@ -1356,7 +1707,7 @@ function renderComparativa(){
       wrapper.style.cssText=`border:1px solid rgba(41,128,185,0.4);border-radius:10px;overflow:hidden;margin-bottom:0`;
       const tlabel=document.createElement('div');
       tlabel.style.cssText='background:rgba(41,128,185,0.07);border-bottom:0.5px solid rgba(41,128,185,0.2);padding:5px 12px;font-family:var(--mono);font-size:8px;color:var(--blue);display:flex;gap:5px;align-items:center';
-      tlabel.innerHTML=`<span>⇄</span> Bodega ${def.barn}`;
+      tlabel.innerHTML=`<span>⇄</span> ${t('barn')} ${def.barn}`;
       wrapper.appendChild(tlabel);
     }
 
@@ -1391,48 +1742,48 @@ function renderComparativa(){
           </div>
           <div style="text-align:right">
             <div style="font-family:var(--mono);font-size:20px;font-weight:600;color:${col(bin.level)};line-height:1">${bin.level}%</div>
-            <div style="font-family:var(--mono);font-size:8px;color:var(--muted)">ahora</div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--muted)">${t('now')}</div>
           </div>
         </div>
 
         <!-- Current level bar -->
         <div style="position:relative">${bar(bin.level,col(bin.level))}</div>
         <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--muted);margin-top:1px margin-bottom:6px">
-          <span>Actual</span><span>${bin.level}%</span>
+          <span>${t('actual')}</span><span>${bin.level}%</span>
         </div>
 
         <!-- Data grid -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px 8px;margin-top:8px">
-          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">CAPACIDAD</div>
+          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">${t('capacity').toUpperCase()}</div>
                <div style="font-family:var(--mono);font-size:10px;color:var(--text);font-weight:600">${bin.cap} t</div></div>
-          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">INVENTARIO</div>
+          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">${t('inventory').toUpperCase()}</div>
                <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${col(bin.level)}">${inv.toFixed(2)} t</div></div>
-          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">ESPACIO LIBRE</div>
+          <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">${t('freeSpace')}</div>
                <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--yellow)">${space.toFixed(2)} t</div></div>
         </div>
 
         ${hasOrder?`
         <div style="border-top:0.5px solid var(--border);margin-top:8px;padding-top:8px">
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px 8px;margin-bottom:6px">
-            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">ORDEN</div>
+            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('orderTab').replace(/[^\w\s]/g,'').trim().toUpperCase()}</div>
                  <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--blue)">${order.toFixed(1)} t</div></div>
-            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">POST-ENTREGA</div>
+            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('postDelivery')}</div>
                  <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${col(afterPct)}">${afterPct}%</div></div>
-            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${isOverfill?'EXCESO':'DIFERENCIA'}</div>
+            <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${isOverfill?t('excess'):t('difference')}</div>
                  <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${isOverfill?'var(--red)':delta<-0.1?'var(--yellow)':'var(--green)'}">${delta>0?'+':''}${delta.toFixed(2)} t</div></div>
           </div>
           <div style="position:relative">${bar(afterPct,col(afterPct))}</div>
           <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--muted);margin-top:1px">
-            <span>Post-entrega</span><span>${afterPct}%</span>
+            <span>${t('postDelivery')}</span><span>${afterPct}%</span>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">
-            ${isOverfill?`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">⚠ Sobrellenado +${delta.toFixed(2)}t</span>`:''}
+            ${isOverfill?`<span style="background:rgba(192,57,43,0.12);border:0.5px solid rgba(192,57,43,0.4);color:var(--red);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">⚠ ${t('overfilled')} +${delta.toFixed(2)}t</span>`:''}
             ${isLow?`<span style="background:rgba(230,126,34,0.12);border:0.5px solid rgba(230,126,34,0.4);color:var(--yellow);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">↑ Quedará al ${afterPct}%</span>`:''}
-            ${!isOverfill&&!isLow?`<span style="background:rgba(39,174,96,0.12);border:0.5px solid rgba(39,174,96,0.4);color:var(--green);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">✓ OK post-entrega</span>`:''}
+            ${!isOverfill&&!isLow?`<span style="background:rgba(39,174,96,0.12);border:0.5px solid rgba(39,174,96,0.4);color:var(--green);font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px">✓ OK ${lang==='es'?'post-entrega':'post-delivery'}</span>`:''}
           </div>
         </div>`:`
         <div style="background:rgba(78,95,122,0.07);border:0.5px solid rgba(78,95,122,0.2);border-radius:5px;padding:7px 10px;margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--muted)">
-          — Sin pedido registrado para este bin
+          ${t('noOrderForBin')}
         </div>`}`;
 
       wrapper.appendChild(row);
@@ -1445,19 +1796,19 @@ function renderComparativa(){
   const footer=document.createElement('div');
   footer.style.cssText='background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:7px;margin-top:4px';
   footer.innerHTML=`
-    <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--green);letter-spacing:.8px">TOTALES — 22 BINS</div>
+    <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--green);letter-spacing:.8px">${t('totals22')}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px">
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">CAPACIDAD TOTAL</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('totalCapacity')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)">${totalCap.toFixed(0)} t</div></div>
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">INVENTARIO TOTAL</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('totalInventory')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green)">${totalInv.toFixed(2)} t</div></div>
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">ESPACIO LIBRE</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('freeSpace')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--yellow)">${totalSpace.toFixed(2)} t</div></div>
-      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">TOTAL ORDENADO</div>
+      <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted)">${t('totalOrdered')}</div>
            <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue)">${totalOrder.toFixed(2)} t</div></div>
     </div>
     <div style="border-top:0.5px solid rgba(39,174,96,0.3);padding-top:7px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-family:var(--mono);font-size:9px;color:var(--muted2)">NIVEL POST-ENTREGA ESTIMADO</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted2)">${t('estimatedPost')}</span>
       <span style="font-family:var(--mono);font-size:20px;font-weight:600;color:${col(overallAfter)}">${overallAfter}%</span>
     </div>
     <div style="position:relative">
@@ -1465,7 +1816,7 @@ function renderComparativa(){
         <div style="width:${overallAfter}%;height:100%;background:${col(overallAfter)};opacity:0.85;border-radius:3px"></div>
       </div>
     </div>
-    <div style="font-family:var(--mono);font-size:8px;color:var(--muted);text-align:right">Promedio global post-entrega</div>`;
+    <div style="font-family:var(--mono);font-size:8px;color:var(--muted);text-align:right">${t('globalPost')}</div>`;
   innerScroll.appendChild(footer);
   scroll.appendChild(innerScroll);
 }
@@ -1479,15 +1830,15 @@ function updateEnviarBtn(){
     btn.style.display='flex';
     btn.style.background='linear-gradient(135deg,var(--green),#1e8449)';
     btn.style.boxShadow='0 2px 12px rgba(39,174,96,0.4)';
-    btn.textContent='✉ GUARDAR RONDA ('+n+' bin'+(n===1?'':'s')+')';
+    btn.textContent=t('saveRound')+' ('+n+' bin'+(n===1?'':'s')+')';
   }else{
     btn.style.display='none';
   }
 }
 function enviarRonda(){
-  if(!can('canSave')){ showToast('Sin permiso','err'); return; }
+  if(!can('canSave')){ showToast(t('noPermission'),'err'); return; }
   const ids=Object.keys(pendientes).map(Number);
-  if(!ids.length){ showToast('No hay lecturas pendientes'); return; }
+  if(!ids.length){ showToast(t('noPendingReadings')); return; }
   if(!sessionStart)sessionStart=new Date();
   ids.forEach(id=>{ const d=pendientes[id]; saveBinData(id,d.level,d.notes); });
   const summary=allBins.filter(b=>ids.includes(b.id)).map(b=>({id:b.id,name:b.name,barn:b.barn,level:b.level,ts:b.ts}));
@@ -1496,8 +1847,8 @@ function enviarRonda(){
     binCount:ids.length,sessionStart:sessionStart?sessionStart.toISOString():null,bins:summary
   };
   db.collection('rondas').add(ronda)
-    .then(()=>{ showToast('✓ Ronda guardada — '+ids.length+' lectura'+(ids.length===1?'':'s')+' registradas'); })
-    .catch(e=>{ showToast('Error al guardar ronda','err'); console.warn(e); });
+    .then(()=>{ showToast('✓ '+t('roundSaved')+' — '+ids.length+' lectura'+(ids.length===1?'':'s')+' '+t('readingsRegistered')); })
+    .catch(e=>{ showToast(t('errorSavingRound'),'err'); console.warn(e); });
   pendientes={};sessionStart=null;sessionReadings=new Set();
   updateEnviarBtn();
   renderBins();
@@ -1524,33 +1875,33 @@ function updateOrderSummary(){
   if(!entries.length){box.style.display='none';return}
   box.style.display='flex';
   const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);
-  let html=`<div class="order-sum-title">Resumen de Orden — ${new Date().toLocaleDateString('es-MX')}</div>`;
+  let html=`<div class="order-sum-title">${t('orderSummary')} — ${new Date().toLocaleDateString('es-MX')}</div>`;
   entries.forEach(b=>{ html+=`<div class="order-sum-row"><span>${b.name} (${b.barn})</span><span>${orderTons[b.id]} t</span></div>`; });
-  html+=`<div class="order-sum-total"><span>TOTAL</span><span>${total.toFixed(1)} toneladas</span></div>`;
+  html+=`<div class="order-sum-total"><span>TOTAL</span><span>${total.toFixed(1)} ${t('tons')}</span></div>`;
   box.innerHTML=html;
 }
 function autoFillOrder(){
-  if(!can('canOrder')){showToast('Sin permiso','err');return}
+  if(!can('canOrder')){showToast(t('noPermission'),'err');return}
   allBins.forEach(bin=>{
     const needed=Math.max(0,bin.cap-(bin.cap*bin.level/100));
     orderTons[bin.id]=Math.round(needed*2)/2;
     const inp=document.getElementById('ord-'+bin.id);if(inp) inp.value=orderTons[bin.id]||'';
   });
-  updateOrderSummary();showToast('✓ Auto-llenado calculado');
+  updateOrderSummary();showToast(t('autofillDone'));
 }
 function clearOrder(){
-  if(!can('canOrder')){showToast('Sin permiso','err');return}
+  if(!can('canOrder')){showToast(t('noPermission'),'err');return}
   orderTons={};
   allBins.forEach(b=>{const i=document.getElementById('ord-'+b.id);if(i)i.value=''});
-  updateOrderSummary();saveOrderData();showToast('Orden limpiada');
+  updateOrderSummary();saveOrderData();showToast(t('orderCleaned'));
 }
 function saveOrder(){
-  if(!can('canOrder')){showToast('Sin permiso','err');return}
+  if(!can('canOrder')){showToast(t('noPermission'),'err');return}
   saveOrderData();
   const entries=allBins.filter(b=>(orderTons[b.id]||0)>0);
-  if(!entries.length){showToast('Ingresa al menos una cantidad');return}
+  if(!entries.length){showToast(t('enterAmount'));return}
   const total=entries.reduce((s,b)=>s+(orderTons[b.id]||0),0);
-  showToast(`✓ Orden guardada — ${total.toFixed(1)} ton`);
+  showToast(`✓ ${t('orderSaved')} — ${total.toFixed(1)} ton`);
 }
 
 // ── ADMIN PANEL ──
@@ -1559,16 +1910,17 @@ function renderAdmin(){
   const screen=document.getElementById('admin-screen');
   screen.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="admin-section-title">Gestión de Usuarios</div>
-      <button class="tbl-btn primary" onclick="openAddUserModal()">+ Agregar</button>
+      <div class="admin-section-title">${t('userManagement')}</div>
+      <button class="tbl-btn primary" onclick="openAddUserModal()">${t('add')}</button>
     </div>
     <div id="users-list"></div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.6">
-      <div style="color:var(--text);font-size:10px;margin-bottom:6px;font-weight:600">Roles y Permisos</div>
-      <div><span style="color:#c39bd3">■ ADMIN</span> — Todo: bodegas, lecturas, orden, usuarios</div>
-      <div><span style="color:#82e0aa">■ OPERADOR</span> — Puede ver y guardar lecturas, cambiar estado abierto/cerrado</div>
-      <div><span style="color:#7fb3d3">■ VISITANTE</span> — Solo lectura, no puede guardar ni modificar</div>
-      <div style="margin-top:8px;color:var(--yellow)">⏱ Sesión: 8 horas por turno</div>
+      <div style="color:var(--text);font-size:10px;margin-bottom:6px;font-weight:600">${t('rolesPerms')}</div>
+      <div><span style="color:#c39bd3">${t('adminPerm')}</span></div>
+      <div><span style="color:#f0b27a">${t('managerPerm')}</span></div>
+      <div><span style="color:#82e0aa">${t('operatorPerm')}</span></div>
+      <div><span style="color:#7fb3d3">${t('visitorPerm')}</span></div>
+      <div style="margin-top:8px;color:var(--yellow)">${t('session8')}</div>
     </div>`;
   renderUsersList();
 }
@@ -1583,13 +1935,13 @@ function renderUsersList(){
     card.innerHTML=`
       <div class="user-card-avatar" style="background:${u.color}">${initials(u.name)}</div>
       <div class="user-card-info">
-        <div class="user-card-name">${u.name} ${isSelf?'<span style="font-size:9px;color:var(--muted)">(tú)</span>':''}</div>
-        <div class="user-card-user">@${u.username} · <span class="user-role-badge role-${u.role}" style="font-size:8px">${u.role.toUpperCase()}</span></div>
-        <div style="font-family:var(--mono);font-size:9px;color:${u.active?'var(--green)':'var(--red)'};margin-top:2px">${u.active?'● Activo':'● Inactivo'}</div>
+        <div class="user-card-name">${u.name} ${isSelf?`<span style="font-size:9px;color:var(--muted)">(${lang==='es'?'tú':'you'})</span>`:''}</div>
+        <div class="user-card-user">@${u.username} · <span class="user-role-badge role-${u.role}" style="font-size:8px">${roleLabel(u.role).toUpperCase()}</span></div>
+        <div style="font-family:var(--mono);font-size:9px;color:${u.active?'var(--green)':'var(--red)'};margin-top:2px">${u.active?'● '+(lang==='es'?'Activo':'Active'):'● '+(lang==='es'?'Inactivo':'Inactive')}</div>
       </div>
       <div class="user-card-actions">
-        <button class="uc-btn" onclick="openEditUserModal('${u.id}')">Editar</button>
-        ${!isSelf?`<button class="uc-btn danger" onclick="deleteUser('${u.id}')">Eliminar</button>`:''}
+        <button class="uc-btn" onclick="openEditUserModal('${u.id}')">${lang==='es'?'Editar':'Edit'}</button>
+        ${!isSelf?`<button class="uc-btn danger" onclick="deleteUser('${u.id}')">${lang==='es'?'Eliminar':'Delete'}</button>`:''}
       </div>`;
     container.appendChild(card);
   });
@@ -1607,32 +1959,35 @@ function openUserModal(uid){
   const modal=document.getElementById('modal');
   const box=document.getElementById('modal-box');
   box.innerHTML=`
-    <div class="modal-title">${u?'Editar Usuario':'Nuevo Usuario'}</div>
-    <div class="modal-field"><div class="modal-lbl">Nombre completo</div>
+    <div class="modal-title">${u?t('editUser'):t('newUser')}</div>
+    <div class="modal-field"><div class="modal-lbl">${t('fullName')}</div>
       <input class="modal-input" id="m-name" value="${u?u.name:''}" placeholder="Ej: Juan García"></div>
-    <div class="modal-field"><div class="modal-lbl">Usuario (login)</div>
+    <div class="modal-field"><div class="modal-lbl">${t('loginUser')}</div>
       <input class="modal-input" id="m-user" value="${u?u.username:''}" placeholder="juangarcia" autocapitalize="none"></div>
-    <div class="modal-field"><div class="modal-lbl">Contraseña ${u?'(dejar vacío para no cambiar)':''}</div>
-      <input class="modal-input" id="m-pass" type="password" placeholder="Mínimo 6 caracteres"></div>
-    <div class="modal-field"><div class="modal-lbl">Rol</div>
+    <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.2);border-radius:7px;padding:8px 10px;font-family:var(--mono);font-size:9px;color:var(--muted2);line-height:1.5">
+      ${t('passwordsFirebase')}<br>
+      ${u?t('resetPasswordHelp'):t('createPasswordHelp')+' <b>'+((document.getElementById('m-user')||{}).value||'usuario')+'@feedbinscolfax.app</b>'}
+    </div>
+    <div class="modal-field"><div class="modal-lbl">${t('role')}</div>
       <select class="modal-input" id="m-role">
-        <option value="operador" ${u?.role==='operador'?'selected':''}>Operador</option>
-        <option value="visitante" ${u?.role==='visitante'?'selected':''}>Visitante</option>
-        <option value="admin" ${u?.role==='admin'?'selected':''}>Administrador</option>
+        <option value="operador" ${u?.role==='operador'?'selected':''}>${t('operator')}</option>
+        <option value="encargado" ${u?.role==='encargado'?'selected':''}>${t('manager')}</option>
+        <option value="visitante" ${u?.role==='visitante'?'selected':''}>${t('visitor')}</option>
+        <option value="admin" ${u?.role==='admin'?'selected':''}>${t('admin')}</option>
       </select></div>
-    <div class="modal-field"><div class="modal-lbl">Color</div>
+    <div class="modal-field"><div class="modal-lbl">${t('color')}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap" id="m-colors">
         ${colors.map(c=>`<div onclick="selectColor('${c}')" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(u?.color===c)?'white':'transparent'};transition:border 0.1s" id="mc-${c.replace('#','')}"></div>`).join('')}
       </div></div>
-    ${u?`<div class="modal-field"><div class="modal-lbl">Estado</div>
+    ${u?`<div class="modal-field"><div class="modal-lbl">${lang==='es'?'Estado':'Status'}</div>
       <select class="modal-input" id="m-active">
-        <option value="true" ${u.active?'selected':''}>Activo</option>
-        <option value="false" ${!u.active?'selected':''}>Inactivo</option>
+        <option value="true" ${u.active?'selected':''}>${lang==='es'?'Activo':'Active'}</option>
+        <option value="false" ${!u.active?'selected':''}>${lang==='es'?'Inactivo':'Inactive'}</option>
       </select></div>`:''}
     <div class="modal-error" id="m-err"></div>
     <div class="modal-actions">
-      <button class="modal-btn cancel" onclick="closeModal()">Cancelar</button>
-      <button class="modal-btn confirm" onclick="saveUserModal('${uid||''}')">Guardar</button>
+      <button class="modal-btn cancel" onclick="closeModal()">${t('cancel')}</button>
+      <button class="modal-btn confirm" onclick="saveUserModal('${uid||''}')">${t('save')}</button>
     </div>`;
   window._selectedColor = u?.color || colors[0];
   modal.classList.add('show');
@@ -1648,35 +2003,32 @@ function selectColor(c){
 function saveUserModal(uid){
   const name=document.getElementById('m-name').value.trim();
   const username=document.getElementById('m-user').value.trim().toLowerCase();
-  const pass=document.getElementById('m-pass').value;
   const role=document.getElementById('m-role').value;
   const errEl=document.getElementById('m-err');
-  if(!name||!username){errEl.textContent='Nombre y usuario son requeridos';errEl.classList.add('show');return}
-  if(!uid&&!pass){errEl.textContent='La contraseña es requerida para nuevos usuarios';errEl.classList.add('show');return}
-  if(pass&&pass.length<6){errEl.textContent='Contraseña mínimo 6 caracteres';errEl.classList.add('show');return}
+  if(!name||!username){errEl.textContent=t('requiredUser');errEl.classList.add('show');return}
   const dup=users.find(u=>u.username===username&&u.id!==uid);
-  if(dup){errEl.textContent='Ese usuario ya existe';errEl.classList.add('show');return}
+  if(dup){errEl.textContent=t('duplicateUser');errEl.classList.add('show');return}
   if(uid){
     const u=users.find(u=>u.id===uid);
     if(u){
       u.name=name;u.username=username;u.role=role;u.color=window._selectedColor;
-      if(pass) u.password=pass;
       const activeEl=document.getElementById('m-active');
       if(activeEl) u.active=activeEl.value==='true';
     }
   } else {
-    users.push({id:'u'+Date.now(),name,username,password:pass,role,color:window._selectedColor,active:true});
+    // Profile only — contraseña se crea en Firebase Console con email: username@feedbinscolfax.app
+    users.push({id:'u'+Date.now(),name,username,role,color:window._selectedColor,active:true});
   }
   saveUsers();closeModal();renderUsersList();
-  showToast(uid?'Usuario actualizado':'✓ Usuario creado');
+  showToast(uid?t('userUpdated'):t('profileCreated'));
 }
 
 function deleteUser(uid){
-  if(uid===currentUser.id){showToast('No puedes eliminarte a ti mismo','err');return}
+  if(uid===currentUser.id){showToast(t('noDeleteSelf'),'err');return}
   const u=users.find(u=>u.id===uid);
-  if(!confirm(`¿Eliminar usuario "${u?.name}"?`))return;
+  if(!confirm(`${t('confirmDeleteUser')} "${u?.name}"?`))return;
   users=users.filter(u=>u.id!==uid);saveUsers();renderUsersList();
-  showToast('Usuario eliminado');
+  showToast(t('userDeleted'));
 }
 
 function closeModal(){
@@ -1702,12 +2054,81 @@ function updateClock(){
 
 // ── SHOW USER MENU ──
 function showUserMenu(){
-  const menu=['Cerrar sesión'];
-  if(can('canAdmin')) menu.unshift('Gestión de usuarios');
-  const choice=menu.length>1?
-    confirm('¿Ir a gestión de usuarios?\n\nCancelar = cerrar sesión'):false;
-  if(choice && can('canAdmin')){ switchTab('admin');return; }
-  if(menu.length===1||!choice) doLogout();
+  const options = [];
+  if(can('canAdmin')) options.push({label:t('userMenuAdmin'), action:'admin'});
+  options.push({label:t('changePassword'), action:'password'});
+  options.push({label:t('logout'), action:'logout'});
+
+  const choice = prompt(
+    `Hola, ${currentUser.name} 👋\n\n` +
+    options.map((o,i)=>`${i+1}. ${o.label}`).join('\n') +
+    '\n\n'+(lang==='es'?'Escribe el número de la opción:':'Type the option number:')
+  );
+  const idx = parseInt(choice) - 1;
+  if(isNaN(idx) || idx < 0 || idx >= options.length) return;
+  const selected = options[idx];
+  if(selected.action === 'admin'){ switchTab('admin'); return; }
+  if(selected.action === 'password'){ showChangePasswordModal(); return; }
+  if(selected.action === 'logout'){ doLogout(); }
+}
+
+// ── CAMBIAR CONTRASEÑA ──
+function showChangePasswordModal(){
+  const modal = document.getElementById('modal');
+  const box   = document.getElementById('modal-box');
+  box.innerHTML = `
+    <div class="modal-title">${t('changePassword')}</div>
+    <div class="modal-field">
+      <div class="modal-lbl">${t('newPassword')}</div>
+      <input class="modal-input" id="cp-new" type="password" placeholder="${t('minPassword')}">
+    </div>
+    <div class="modal-field">
+      <div class="modal-lbl">${t('confirmPassword')}</div>
+      <input class="modal-input" id="cp-confirm" type="password" placeholder="${t('repeatPassword')}">
+    </div>
+    <div class="modal-error" id="cp-err"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">${t('cancel')}</button>
+      <button class="modal-btn confirm" id="cp-save" onclick="doChangePassword()">${t('save')}</button>
+    </div>`;
+  modal.classList.add('show');
+  setTimeout(()=>document.getElementById('cp-new').focus(), 100);
+}
+
+async function doChangePassword(){
+  const np  = document.getElementById('cp-new').value;
+  const cp  = document.getElementById('cp-confirm').value;
+  const err = document.getElementById('cp-err');
+  const btn = document.getElementById('cp-save');
+
+  if(np.length < 6){ err.textContent=t('minPassword'); err.classList.add('show'); return; }
+  if(np !== cp){     err.textContent=t('passwordsNoMatch'); err.classList.add('show'); return; }
+
+  btn.disabled = true; btn.textContent = t('saving');
+  try {
+    await auth.currentUser.updatePassword(np);
+    closeModal();
+    showToast(t('passwordUpdated'));
+  } catch(e) {
+    if(e.code === 'auth/requires-recent-login'){
+      err.textContent = lang==='es'?'Sesión expirada. Cierra sesión, vuelve a entrar e intenta de nuevo.':'Session expired. Log out, sign back in, and try again.';
+    } else {
+      err.textContent = 'Error: ' + e.message;
+    }
+    err.classList.add('show');
+    btn.disabled = false; btn.textContent = t('save');
+  }
+}
+
+// Welcome / Login screen transitions
+function showLoginForm(){
+  document.getElementById('ls-welcome').style.display='none';
+  document.getElementById('ls-form').style.display='flex';
+  setTimeout(()=>document.getElementById('inp-user').focus(),50);
+}
+function showWelcomeScreen(){
+  document.getElementById('ls-form').style.display='none';
+  document.getElementById('ls-welcome').style.display='flex';
 }
 
 // Enter key on login
@@ -1724,12 +2145,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 updateClock();
 setInterval(updateClock,1000);
 
-// Try restore session
-if(restoreSession()){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  onLoginSuccess();
-}
+// Session restore is handled automatically by firebase.auth().onAuthStateChanged above
 </script>
 </body>
 </html>
