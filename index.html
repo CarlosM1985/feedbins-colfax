@@ -58,8 +58,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .ls-eyebrow{
   display:flex;align-items:center;gap:8px;
   font-family:'Space Mono','IBM Plex Mono',monospace;
-  font-size:11px;letter-spacing:1.5px;color:#00E676;
-  text-transform:uppercase;position:relative;
+  font-size:11px;letter-spacing:1.2px;color:#00E676;
+  position:relative;
 }
 .ls-eyebrow-dot{
   width:6px;height:6px;border-radius:50%;
@@ -88,6 +88,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 }
 .ls-btn-primary:active{opacity:0.8}
 .ls-btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.ls-btn-ghost{
+  width:100%;height:56px;border-radius:16px;
+  background:transparent;color:#fff;
+  border:1px solid rgba(255,255,255,0.12);
+  font-family:'Space Grotesk','Barlow',sans-serif;
+  font-weight:600;font-size:17px;letter-spacing:-0.2px;
+  cursor:pointer;transition:opacity 0.15s;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:12px;
+}
+.ls-btn-ghost:active{opacity:0.7}
 .ls-tagline{
   font-family:'Space Mono','IBM Plex Mono',monospace;
   font-size:10px;letter-spacing:0.8px;
@@ -435,13 +446,14 @@ select.modal-input{cursor:pointer}
     <!-- Eyebrow -->
     <div class="ls-eyebrow">
       <span class="ls-eyebrow-dot"></span>
-      Monitoreo en tiempo real
+      Feed monitoring · live
     </div>
     <div class="ls-spacer"></div>
     <!-- Hero copy -->
-    <h1 class="ls-headline">Controla cada<br><span>bodega.</span></h1>
-    <p class="ls-body">Niveles, consumo y reabastecimiento de toda tu operación — en tiempo real, desde cualquier dispositivo.</p>
+    <h1 class="ls-headline">Sabe qué hay en<br>cada <span>bodega.</span></h1>
+    <p class="ls-body">Rastrea niveles, consumo y reabastecimiento en toda tu operación — en tiempo real, desde cualquier dispositivo.</p>
     <button class="ls-btn-primary" onclick="showLoginForm()">Ingresar</button>
+    <button class="ls-btn-ghost" onclick="showLoginForm()">Ya tengo una cuenta</button>
     <div class="ls-tagline">Granja Colfax · Sistema de Bodegas</div>
   </div>
 
@@ -618,9 +630,9 @@ const auth = firebase.auth();
 // Language system
 const LANG = {
   es: {
-    langBtn:'EN', realtime:'Monitoreo en tiempo real', headline:'Controla cada<br><span>bodega.</span>',
-    welcomeBody:'Niveles, consumo y reabastecimiento de toda tu operación — en tiempo real, desde cualquier dispositivo.',
-    enter:'Ingresar', tagline:'Granja Colfax · Sistema de Bodegas', loginTitle:'Iniciar sesión',
+    langBtn:'EN', realtime:'Feed monitoring · live', headline:'Sabe qué hay en<br>cada <span>bodega.</span>',
+    welcomeBody:'Rastrea niveles, consumo y reabastecimiento en toda tu operación — en tiempo real, desde cualquier dispositivo.',
+    enter:'Ingresar', enterGhost:'Ya tengo una cuenta', tagline:'Granja Colfax · Sistema de Bodegas', loginTitle:'Iniciar sesión',
     loginSub:'Ingresa con tus credenciales de Colfax.', user:'Usuario', password:'Contraseña',
     userPlaceholder:'usuario', loginError:'Usuario o contraseña incorrectos', loginAction:'Entrar',
     version:'FeedBins v4.0 · Sesión de 8 horas', loading:'Cargando...', verifying:'Verificando...',
@@ -674,9 +686,9 @@ const LANG = {
     saving:'Guardando...', passwordUpdated:'✓ Contraseña actualizada'
   },
   en: {
-    langBtn:'ES', realtime:'Real-time monitoring', headline:'Control every<br><span>feed bin.</span>',
-    welcomeBody:'Levels, consumption, and replenishment for the whole operation — live from any device.',
-    enter:'Enter', tagline:'Colfax Farm · Feed Bin System', loginTitle:'Sign in',
+    langBtn:'ES', realtime:'Feed monitoring · live', headline:'Know what\'s in<br>every <span>bin.</span>',
+    welcomeBody:'Track feed levels, usage and reorders across your whole operation — in real time, from anywhere.',
+    enter:'Sign in', enterGhost:'I already have an account', tagline:'Colfax Farm · Feed Bin System', loginTitle:'Sign in',
     loginSub:'Use your Colfax credentials.', user:'User', password:'Password', userPlaceholder:'user',
     loginError:'Incorrect user or password', loginAction:'Log in', version:'FeedBins v4.0 · 8-hour session',
     loading:'Loading...', verifying:'Checking...', missingLogin:'Enter user and password',
@@ -759,6 +771,7 @@ function applyLang(){
   setHTML('.ls-headline','headline');
   setText('.ls-body','welcomeBody');
   setText('#ls-welcome .ls-btn-primary','enter');
+  setText('#ls-welcome .ls-btn-ghost','enterGhost');
   setText('.ls-tagline','tagline');
   setText('.ls-form-title','loginTitle');
   setText('.ls-form-sub','loginSub');
