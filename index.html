@@ -741,7 +741,7 @@ const LANG = {
     saving:'Saving...', passwordUpdated:'✓ Password updated'
   }
 };
-let lang = localStorage.getItem('fb-lang') || 'en';
+let lang = localStorage.getItem('fb-lang') || 'es';
 function t(key){ return (LANG[lang] && LANG[lang][key]) || LANG.es[key] || key; }
 function groupLabel(group){
   if(group==='Gestación') return t('gestation');
