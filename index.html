@@ -683,7 +683,11 @@ const LANG = {
     userDeleted:'Usuario eliminado', userMenuAdmin:'Gestión de usuarios', changePassword:'Cambiar contraseña',
     newPassword:'Nueva contraseña', confirmPassword:'Confirmar contraseña', minPassword:'Mínimo 6 caracteres',
     repeatPassword:'Repite la contraseña', passwordsNoMatch:'Las contraseñas no coinciden',
-    saving:'Guardando...', passwordUpdated:'✓ Contraseña actualizada'
+    saving:'Guardando...', passwordUpdated:'✓ Contraseña actualizada',
+    animalConfig:'Animales por grupo', animales:'animales',
+    saveAnimals:'Guardar', kgPerAnimal:'kg/animal/día', consumoNA:'Sin datos suficientes',
+    consumptionTitle:'Consumo estimado', consumptionSub:'kg/día por grupo · basado en últimas lecturas',
+    perAnimal:'Por animal', noAnimals:'— ingresa animales'
   },
   en: {
     langBtn:'ES', realtime:'Feed monitoring · live', headline:'Know what\'s in<br>every <span>bin.</span>',
@@ -738,7 +742,11 @@ const LANG = {
     userDeleted:'User deleted', userMenuAdmin:'User management', changePassword:'Change password',
     newPassword:'New password', confirmPassword:'Confirm password', minPassword:'Minimum 6 characters',
     repeatPassword:'Repeat password', passwordsNoMatch:'Passwords do not match',
-    saving:'Saving...', passwordUpdated:'✓ Password updated'
+    saving:'Saving...', passwordUpdated:'✓ Password updated',
+    animalConfig:'Animals per group', animales:'animals',
+    saveAnimals:'Save', kgPerAnimal:'lbs/animal/day', consumoNA:'Not enough data',
+    consumptionTitle:'Estimated consumption', consumptionSub:'lbs/day per group · based on last readings',
+    perAnimal:'Per animal', noAnimals:'— enter animals'
   }
 };
 let lang = localStorage.getItem('fb-lang') || 'es';
@@ -997,6 +1005,14 @@ function initFirestoreSync(){
       try{localStorage.setItem('fb-v4-order',JSON.stringify(orderTons));}catch(e){}
     }
   }).catch(e=>console.warn('FB order load error',e));
+
+  // Load + real-time sync animal counts
+  db.collection('config').doc('animals').onSnapshot(doc=>{
+    if(doc.exists && doc.data().data){
+      animalCounts={...animalCounts,...doc.data().data};
+      try{localStorage.setItem('fb-v4-animals',JSON.stringify(animalCounts));}catch(e){}
+    }
+  },err=>console.warn('FB config listener error',err));
 }
 
 function onLoginSuccess(){
@@ -1093,8 +1109,27 @@ function saveOrderData(){
   try{localStorage.setItem('fb-v4-order',JSON.stringify(orderTons));}catch(e){}
   db.collection('orders').doc('current').set({data:orderTons,ts:new Date().toISOString()}).catch(e=>console.warn('FB order error',e));
 }
+function loadAnimalCounts(){
+  try{const s=localStorage.getItem('fb-v4-animals');if(s)return JSON.parse(s);}catch(e){}
+  return{'Gestación':0,'Breeding':0,'Lactación':0};
+}
+function saveAnimalCounts(){
+  try{localStorage.setItem('fb-v4-animals',JSON.stringify(animalCounts));}catch(e){}
+  db.collection('config').doc('animals').set({data:animalCounts,ts:new Date().toISOString()})
+    .catch(e=>console.warn('FB animals save error',e));
+}
+function doSaveAnimalCounts(){
+  const map={'Gestación':'gest','Breeding':'breed','Lactación':'lact'};
+  Object.entries(map).forEach(([group,id])=>{
+    const el=document.getElementById('animals-'+id);
+    if(el) animalCounts[group]=parseInt(el.value)||0;
+  });
+  saveAnimalCounts();
+  showToast('✓ '+t('saveAnimals'));
+  renderComparativa();
+}
 
-let allBins=loadBins(), history=loadHistory(), orderTons=loadOrder();
+let allBins=loadBins(), history=loadHistory(), orderTons=loadOrder(), animalCounts=loadAnimalCounts();
 let expanded=null, activeFilter="Todos", currentTab='bins';
 let sessionReadings=new Set(), sessionStart=null;
 let pendientes={}; // {binId: {level, notes}} — lecturas marcadas listas para guardar
@@ -1264,6 +1299,9 @@ function marcarListo(binId){
 function saveBinData(binId,level,notes){
   const bin=allBins.find(b=>b.id===binId);if(!bin)return;
   const prev=bin.prevLevel!=null?bin.prevLevel:bin.level;
+  // Store previous reading for consumption calculation
+  bin.prevSavedLevel=bin.level;
+  bin.prevSavedTs=bin.ts;
   bin.level=level;bin.notes=notes;bin.prevLevel=level;bin.ts=nowTs();bin.savedBy=currentUser.name;
   history.unshift({ts:bin.ts,binId:bin.id,binName:bin.name,barn:bin.barn,group:bin.group,
     diet:bin.diet,cap:bin.cap,level:bin.level,prevLevel:prev,notes:bin.notes,
@@ -1628,6 +1666,31 @@ function renderOrder(){
   updateOrderSummary();
 }
 
+// ── CONSUMPTION HELPERS ──
+function calcBinConsumptionRate(bin){
+  if(!bin.prevSavedTs||bin.prevSavedLevel==null) return null;
+  const hrs=(new Date(bin.ts||0)-new Date(bin.prevSavedTs))/3600000;
+  if(hrs<1) return null;
+  const tons=Math.max(0,(bin.prevSavedLevel-bin.level)/100*bin.cap);
+  return tons/(hrs/24); // tons/day
+}
+function calcGroupConsumption(group){
+  const bins=allBins.filter(b=>b.group===group);
+  const rates=bins.map(b=>calcBinConsumptionRate(b)).filter(r=>r!==null);
+  if(!rates.length) return null;
+  return rates.reduce((s,r)=>s+r,0);
+}
+function fmtConsumption(tonsPerDay){
+  if(tonsPerDay===null) return null;
+  if(lang==='es') return (tonsPerDay*1000).toFixed(0)+' kg/día';
+  return (tonsPerDay*2204.6).toFixed(0)+' lbs/day';
+}
+function fmtPerAnimal(tonsPerDay,animals){
+  if(tonsPerDay===null||!animals) return null;
+  if(lang==='es') return ((tonsPerDay*1000)/animals).toFixed(1)+' '+t('kgPerAnimal');
+  return ((tonsPerDay*2204.6)/animals).toFixed(1)+' '+t('kgPerAnimal');
+}
+
 // ── COMPARATIVA ──
 function renderComparativa(){
   const scroll=document.getElementById('comparativa-scroll');
@@ -1831,6 +1894,37 @@ function renderComparativa(){
     </div>
     <div style="font-family:var(--mono);font-size:8px;color:var(--muted);text-align:right">${t('globalPost')}</div>`;
   innerScroll.appendChild(footer);
+
+  // ── Consumption section ──
+  const consSection=document.createElement('div');
+  consSection.style.cssText='margin-top:10px;border:1px solid var(--border);border-radius:10px;overflow:hidden';
+  const consHdr=document.createElement('div');
+  consHdr.style.cssText='background:var(--s2);padding:10px 14px;border-bottom:1px solid var(--border)';
+  consHdr.innerHTML=`
+    <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);letter-spacing:.5px">${t('consumptionTitle').toUpperCase()}</div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${t('consumptionSub')}</div>`;
+  consSection.appendChild(consHdr);
+  const groups=['Gestación','Breeding','Lactación'];
+  groups.forEach((group,gi)=>{
+    const rate=calcGroupConsumption(group);
+    const animals=animalCounts[group]||0;
+    const daily=fmtConsumption(rate);
+    const pa=fmtPerAnimal(rate,animals);
+    const row=document.createElement('div');
+    row.style.cssText=`padding:10px 14px;display:flex;justify-content:space-between;align-items:center;${gi<groups.length-1?'border-bottom:0.5px solid var(--border)':''}`;
+    row.innerHTML=`
+      <div>
+        <div style="font-family:var(--sans);font-size:11px;font-weight:600;color:var(--text)">${groupLabel(group)}</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${animals>0?animals+' '+t('animales'):t('noAnimals')}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:${rate!==null?'var(--blue)':'var(--muted)'}">${daily||t('consumoNA')}</div>
+        ${animals>0&&pa?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:1px">${pa} ${t('perAnimal').toLowerCase()}</div>`:''}
+      </div>`;
+    consSection.appendChild(row);
+  });
+  innerScroll.appendChild(consSection);
+
   scroll.appendChild(innerScroll);
 }
 
@@ -1934,6 +2028,22 @@ function renderAdmin(){
       <div><span style="color:#82e0aa">${t('operatorPerm')}</span></div>
       <div><span style="color:#7fb3d3">${t('visitorPerm')}</span></div>
       <div style="margin-top:8px;color:var(--yellow)">${t('session8')}</div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="admin-section-title">${t('animalConfig')}</div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px">
+        ${['Gestación','Breeding','Lactación'].map((g,i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${i<2?'border-bottom:0.5px solid var(--border)':''}">
+          <span style="font-family:var(--sans);font-size:11px;font-weight:600;color:var(--text)">${groupLabel(g)}</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" min="0" step="1" id="animals-${g==='Gestación'?'gest':g==='Breeding'?'breed':'lact'}"
+              style="width:75px;background:var(--s1);border:1px solid var(--border2);border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--mono);font-size:12px;text-align:right"
+              value="${animalCounts[g]||0}">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">${t('animales')}</span>
+          </div>
+        </div>`).join('')}
+        <button class="tbl-btn primary" style="margin-top:10px;width:100%;padding:9px" onclick="doSaveAnimalCounts()">${t('saveAnimals')}</button>
+      </div>
     </div>`;
   renderUsersList();
 }

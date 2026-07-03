@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Bins ──────────────────────────────────────────────────
+    // Cualquier usuario autenticado puede leer.
+    // Solo operador/encargado/admin pueden escribir (visitante = solo lectura).
+    match /bins/{binId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role
+           in ['admin', 'operador', 'encargado'];
+    }
+
+    // ── Historial ──────────────────────────────────────────────
+    match /history/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role
+           in ['admin', 'operador', 'encargado'];
+      allow delete: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── Órdenes ───────────────────────────────────────────────
+    match /orders/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role
+           in ['admin', 'operador', 'encargado'];
+    }
+
+    // ── Rondas (historial de rondas guardadas) ────────────────
+    match /rondas/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role
+           in ['admin', 'operador', 'encargado'];
+    }
+
+    // ── Config (conteo de animales, etc.) ────────────────────
+    match /config/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── Perfiles de usuario (sin contraseñas) ─────────────────
+    match /users/list {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── Roles por UID (solo lectura para usuarios, admin escribe) ──
+    // Estos documentos los crea setup-firebase-auth.html
+    match /userRoles/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null
+        && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+  }
+}
