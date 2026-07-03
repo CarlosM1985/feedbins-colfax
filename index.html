@@ -1854,14 +1854,14 @@ function enviarRonda(){
   if(!ids.length){ showToast(t('noPendingReadings')); return; }
   if(!sessionStart)sessionStart=new Date();
   ids.forEach(id=>{ const d=pendientes[id]; saveBinData(id,d.level,d.notes); });
+  // Show success immediately after bins are saved — don't wait for rondas
+  showToast('✓ '+t('roundSaved')+' — '+ids.length+' lectura'+(ids.length===1?'':'s')+' '+t('readingsRegistered'));
   const summary=allBins.filter(b=>ids.includes(b.id)).map(b=>({id:b.id,name:b.name,barn:b.barn,level:b.level,ts:b.ts}));
   const ronda={
     ts:new Date().toISOString(),user:currentUser.name,role:currentUser.role,
     binCount:ids.length,sessionStart:sessionStart?sessionStart.toISOString():null,bins:summary
   };
-  db.collection('rondas').add(ronda)
-    .then(()=>{ showToast('✓ '+t('roundSaved')+' — '+ids.length+' lectura'+(ids.length===1?'':'s')+' '+t('readingsRegistered')); })
-    .catch(e=>{ showToast(t('errorSavingRound'),'err'); console.warn(e); });
+  db.collection('rondas').add(ronda).catch(e=>console.warn('rondas log error',e));
   pendientes={};sessionStart=null;sessionReadings=new Set();
   updateEnviarBtn();
   renderBins();
