@@ -1,1 +1,17 @@
-{"name":"FeedBins Colfax","short_name":"FeedBins","description":"Monitor de bodegas — Granja Colfax","start_url":"./index.html","display":"standalone","background_color":"#0d0f14","theme_color":"#111520","orientation":"portrait","lang":"es","icons":[{"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},{"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
+{
+  "name": "FeedBins",
+  "short_name": "FeedBins",
+  "description": "Feed bin monitoring for Colfax Farm — track levels, consumption and reorders in real time.",
+  "start_url": "https://feedbins.app/",
+  "scope": "https://feedbins.app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0f14",
+  "theme_color": "#0d0f14",
+  "lang": "es",
+  "id": "com.feedbins.app",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
