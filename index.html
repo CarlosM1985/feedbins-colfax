@@ -511,6 +511,11 @@ select.modal-input{cursor:pointer}
       <button onclick="exitDemoMode()" style="background:rgba(41,128,185,0.25);border:1px solid rgba(41,128,185,0.5);color:#5dade2;font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:5px;cursor:pointer">Salir</button>
     </div>
   </div>
+  <!-- Update banner (hidden, shown only when new SW is waiting) -->
+  <div id="update-banner" style="display:none;position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:9999;background:#1a1d24;border:1px solid #00E676;border-radius:14px;padding:9px 16px;align-items:center;gap:12px;box-shadow:0 4px 28px rgba(0,0,0,0.6);white-space:nowrap">
+    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.5)">🔄 Nueva versión disponible</span>
+    <button id="update-btn" onclick="aplicarActualizacion()" style="background:#00E676;color:#0d0f14;border:none;border-radius:8px;padding:6px 16px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.3px">Actualizar</button>
+  </div>
   <div class="topbar">
     <div class="logo"><em>Feed</em>Bins</div>
     <div class="topbar-center">
@@ -2361,100 +2366,43 @@ document.getElementById('inp-user').addEventListener('keydown',e=>{if(e.key==='E
 // Close modal on overlay click
 document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
 
+// ── SERVICE WORKER + UPDATE DETECTION ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    // Already waiting? (user had page open when update arrived and already installed)
+    if(reg.waiting && navigator.serviceWorker.controller){
+      _showUpdateBanner();
+    }
+    // New SW detected while page is open
+    reg.addEventListener('updatefound',()=>{
+      const nw=reg.installing;
+      nw.addEventListener('statechange',()=>{
+        if(nw.state==='installed' && navigator.serviceWorker.controller){
+          _showUpdateBanner();
+        }
+      });
+    });
+  }).catch(()=>{});
+  // New SW took control (auto-skipWaiting or after SKIP_WAITING message)
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    _showUpdateBanner();
+  });
+}
+function _showUpdateBanner(){
+  const el=document.getElementById('update-banner');
+  if(el) el.style.display='flex';
+}
+function aplicarActualizacion(){
+  const btn=document.getElementById('update-btn');
+  if(btn){btn.textContent='Recargando...';btn.disabled=true;}
+  window.location.reload(true);
+}
 
 // ── INIT ──
 updateClock();
 setInterval(updateClock,1000);
 
 // Session restore is handled automatically by firebase.auth().onAuthStateChanged above
-</script>
-
-<!-- ════════════════════════════════════════════════════════════════
-     FEEDBINS · BLOQUE DE ACTUALIZACIÓN (TODO EN UNO)
-     ────────────────────────────────────────────────────────────────
-     INSTRUCCIÓN ÚNICA:
-     Pega TODO este bloque en tu index.html justo ANTES de </body>
-     (la última línea del archivo). Nada más. Este bloque se encarga
-     solo de crear el aviso, sus estilos y la lógica de actualización.
-
-     No necesitas tocar la línea vieja del service worker: este bloque
-     la reemplaza automáticamente al cargar.
-     ════════════════════════════════════════════════════════════════ -->
-
-<style>
-#update-banner{
-  position:fixed;left:12px;right:12px;
-  bottom:max(env(safe-area-inset-bottom),14px);
-  max-width:500px;margin:0 auto;
-  background:#111520;border:1px solid #27ae60;border-radius:10px;
-  padding:11px 14px;z-index:400;
-  opacity:0;transform:translateY(16px);
-  transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
-  pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.4);
-}
-#update-banner.show{opacity:1;transform:translateY(0);pointer-events:auto}
-#update-banner .ub-inner{display:flex;align-items:center;justify-content:space-between;gap:10px}
-#update-banner .ub-text{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:#27ae60}
-#update-banner .ub-btn{
-  background:#27ae60;color:#051a0e;border:none;border-radius:7px;
-  font-family:'Barlow',sans-serif;font-size:12px;font-weight:800;letter-spacing:.5px;
-  padding:8px 16px;cursor:pointer;flex-shrink:0;
-  -webkit-tap-highlight-color:transparent;transition:opacity .15s;
-}
-#update-banner .ub-btn:active{opacity:.75}
-#update-banner .ub-btn:disabled{opacity:.5;cursor:not-allowed}
-</style>
-
-<div id="update-banner">
-  <div class="ub-inner">
-    <span class="ub-text">✨ Nueva versión disponible</span>
-    <button id="update-btn" class="ub-btn" onclick="aplicarActualizacion()">Actualizar</button>
-  </div>
-</div>
-
-<script>
-// ── ACTUALIZACIÓN DE LA APP (service worker) ──
-(function(){
-  if(!('serviceWorker' in navigator)) return;
-
-  let refreshing=false, waitingWorker=null;
-
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(refreshing) return;
-    refreshing=true;
-    window.location.reload();
-  });
-
-  navigator.serviceWorker.register('sw.js').then(reg=>{
-    if(reg.waiting){ mostrarBotonActualizar(reg.waiting); }
-    reg.addEventListener('updatefound',()=>{
-      const nuevo=reg.installing;
-      if(!nuevo) return;
-      nuevo.addEventListener('statechange',()=>{
-        if(nuevo.state==='installed' && navigator.serviceWorker.controller){
-          mostrarBotonActualizar(nuevo);
-        }
-      });
-    });
-    document.addEventListener('visibilitychange',()=>{
-      if(document.visibilityState==='visible') reg.update().catch(()=>{});
-    });
-    reg.update().catch(()=>{});
-  }).catch(()=>{});
-
-  function mostrarBotonActualizar(worker){
-    waitingWorker=worker;
-    const banner=document.getElementById('update-banner');
-    if(banner) banner.classList.add('show');
-  }
-
-  window.aplicarActualizacion=function(){
-    if(!waitingWorker) return;
-    const btn=document.getElementById('update-btn');
-    if(btn){ btn.textContent='Actualizando…'; btn.disabled=true; }
-    waitingWorker.postMessage('SKIP_WAITING');
-  };
-})();
 </script>
 </body>
 </html>
