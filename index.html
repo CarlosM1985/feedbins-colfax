@@ -305,12 +305,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .v-slider-col{display:flex;flex-direction:column;align-items:center;gap:4px;width:48px;flex-shrink:0}
 .v-slider-lbl{font-family:var(--mono);font-size:8px;color:var(--muted)}
 .v-slider-wrap{flex:1;display:flex;align-items:center;justify-content:center}
-input.vslider{-webkit-appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;width:32px;height:125px;border:none;outline:none;cursor:pointer;background:transparent}
+input.vslider{-webkit-appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;width:32px;height:160px;border:none;outline:none;cursor:pointer;background:transparent}
 input.vslider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.15)}
 input.vslider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;cursor:pointer;border:none}
 input.vslider:disabled{opacity:0.4;cursor:not-allowed}
 .exp-svg-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.exp-svg{width:110px;height:154px;position:relative;flex-shrink:0;margin:0 auto}
+.exp-svg{width:140px;height:196px;position:relative;flex-shrink:0;margin:0 auto}
 .exp-svg svg{width:100%;height:100%}
 .exp-pct-lbl{position:absolute;top:43%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:16px;font-weight:600;color:#fff;pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,0.9)}
 .exp-pct-big{font-family:var(--mono);font-size:14px;font-weight:600;text-align:center}
@@ -426,7 +426,7 @@ select.modal-input{cursor:pointer}
 .fs-back-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:10px;padding:6px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .fs-back-btn:active{opacity:0.7}
 .fs-bin-title{font-family:var(--sans);font-size:14px;font-weight:800;flex:1}
-.fs-bin-scroll{flex:1;overflow-y:auto;padding:12px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),16px)}
+.fs-bin-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;padding:12px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),16px)}
 .fs-bin-scroll::-webkit-scrollbar{display:none}
 </style>
 </head>
@@ -1311,7 +1311,7 @@ function onSlide(binId,val){
   bin.level=parseInt(val);
   const color=col(bin.level);
   const esvg=document.getElementById('esvg-'+binId);
-  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154,bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
+  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,140,196,bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
   const ep=document.getElementById('epb-'+binId);if(ep){ep.textContent=bin.level+'%';ep.className='exp-pct-big '+valCls(bin.level)}
   const inv=(bin.cap*bin.level/100).toFixed(2);
   const et=document.getElementById('eton-'+binId);if(et) et.textContent=inv+' ton de '+bin.cap;
@@ -1454,7 +1454,7 @@ function buildExpandHTML(bin){
       </div>
       <div class="exp-svg-wrap">
         <div class="exp-svg" id="esvg-${bin.id}">
-          ${makeSVG(bin.level,color,110,154,bin.cap)}
+          ${makeSVG(bin.level,color,140,196,bin.cap)}
           <div class="exp-pct-lbl">${bin.level}%</div>
         </div>
         <div class="exp-pct-big ${valCls(bin.level)}" id="epb-${bin.id}">${bin.level}%</div>
