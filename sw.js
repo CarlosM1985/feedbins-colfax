@@ -8,7 +8,7 @@
 //  Eso hace que la app detecte la version nueva y le muestre
 //  al operador el boton "Actualizar".
 // ══════════════════════════════════════════════════════
-const CACHE = 'feedbins-colfax-v7';
+const CACHE = 'feedbins-colfax-v8';
 const ASSETS = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 // ── INSTALL: guarda los archivos base ──
 self.addEventListener('install', e => {
