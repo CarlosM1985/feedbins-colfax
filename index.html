@@ -420,7 +420,7 @@ select.modal-input{cursor:pointer}
 .toast.error-toast{background:var(--red);color:#fff}
 
 /* ══ FULLSCREEN BIN DETAIL ══ */
-#fs-bin-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;max-width:500px;margin:0 auto}
+#fs-bin-overlay{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100dvh;background:var(--bg);z-index:200;display:none;flex-direction:column;max-width:500px;margin:0 auto}
 #fs-bin-overlay.show{display:flex}
 .fs-bin-topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:max(env(safe-area-inset-top),10px) 12px 9px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .fs-back-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:10px;padding:6px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
@@ -2368,34 +2368,36 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 
 // ── SERVICE WORKER + UPDATE DETECTION ──
 if('serviceWorker' in navigator){
+  window._swWaiting=null;
+  window._updateListo=false;
   navigator.serviceWorker.register('sw.js').then(reg=>{
-    // Already waiting? (user had page open when update arrived and already installed)
-    if(reg.waiting && navigator.serviceWorker.controller){
-      _showUpdateBanner();
-    }
-    // New SW detected while page is open
+    if(reg.waiting && navigator.serviceWorker.controller){ _mostrarUpdate(reg.waiting); }
     reg.addEventListener('updatefound',()=>{
       const nw=reg.installing;
+      if(!nw) return;
       nw.addEventListener('statechange',()=>{
-        if(nw.state==='installed' && navigator.serviceWorker.controller){
-          _showUpdateBanner();
-        }
+        if(nw.state==='installed' && navigator.serviceWorker.controller){ _mostrarUpdate(nw); }
       });
     });
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible') reg.update().catch(()=>{});
+    });
+    reg.update().catch(()=>{});
   }).catch(()=>{});
-  // New SW took control (auto-skipWaiting or after SKIP_WAITING message)
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    _showUpdateBanner();
+    if(window._updateListo){ window._updateListo=false; window.location.reload(); }
   });
 }
-function _showUpdateBanner(){
+function _mostrarUpdate(worker){
+  window._swWaiting=worker;
   const el=document.getElementById('update-banner');
   if(el) el.style.display='flex';
 }
 function aplicarActualizacion(){
   const btn=document.getElementById('update-btn');
-  if(btn){btn.textContent='Recargando...';btn.disabled=true;}
-  window.location.reload(true);
+  if(btn){btn.textContent='Actualizando...';btn.disabled=true;}
+  if(window._swWaiting){ window._updateListo=true; window._swWaiting.postMessage('SKIP_WAITING'); }
+  else { window.location.reload(); }
 }
 
 // ── INIT ──
