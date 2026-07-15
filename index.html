@@ -629,6 +629,48 @@ select.modal-input{cursor:pointer}
   <div class="modal-box" id="modal-box"></div>
 </div>
 
+<!-- ══════════ ORDER EMAIL MODAL ══════════ -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal-box" style="max-width:400px;max-height:88vh;overflow-y:auto;padding:16px;gap:0;scrollbar-width:none">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text);letter-spacing:.5px">📧 ENVIAR ORDEN</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">AMVC Nutritional — Colfax</div>
+      </div>
+      <button onclick="closeOrderModal()" style="background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px">×</button>
+    </div>
+    <!-- Dates row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px;margin-bottom:3px">FECHA DE ORDEN</div>
+        <div id="ord-date-display" style="font-family:var(--mono);font-size:10px;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 8px"></div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px;margin-bottom:3px">FECHA DE ENTREGA</div>
+        <input type="date" id="ord-delivery-date" style="font-family:var(--mono);font-size:10px;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;width:100%;box-sizing:border-box">
+      </div>
+    </div>
+    <!-- Bins table -->
+    <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px;margin-bottom:4px">TONELADAS POR BIN (edita si necesitas ajustar)</div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:2fr 60px 44px 44px;background:var(--s2);border-bottom:1px solid var(--border);padding:5px 10px">
+        <div style="font-family:var(--mono);font-size:7px;color:var(--muted)">FÓRMULA</div>
+        <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-align:center">BIN</div>
+        <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-align:center">TONS</div>
+        <div style="font-family:var(--mono);font-size:7px;color:var(--muted);text-align:center">%</div>
+      </div>
+      <div id="ord-bins-body"></div>
+    </div>
+    <!-- Comments -->
+    <div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px;margin-bottom:4px">COMMENTS</div>
+    <textarea id="ord-comments" rows="2" placeholder="Instrucciones especiales..." style="font-family:var(--mono);font-size:10px;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px;width:100%;box-sizing:border-box;resize:none;margin-bottom:14px"></textarea>
+    <!-- Send button -->
+    <button onclick="sendOrderByEmail()" style="background:var(--green);color:#0d0f14;border:none;border-radius:10px;padding:12px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;width:100%;letter-spacing:.5px">📧 Abrir en Email</button>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--muted);text-align:center;margin-top:8px">Para: ocaraveo@amvcms.com</div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ══════════ FULLSCREEN BIN DETAIL ══════════ -->
@@ -1857,8 +1899,7 @@ function renderComparativa(){
   // ── Per-bin rows via TANDEM_DEFS ──
   const binById=Object.fromEntries(sorted.map(b=>[b.id,b]));
   const innerScroll=document.createElement('div');
-  innerScroll.style.cssText='flex:1;overflow-y:auto;padding:6px 10px 16px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch';
-  innerScroll.style.setProperty('-webkit-overflow-scrolling','touch');
+  innerScroll.style.cssText='padding:6px 10px 16px;display:flex;flex-direction:column;gap:6px';
 
   let lastGrp='';
   TANDEM_DEFS.forEach(def=>{
@@ -2105,6 +2146,9 @@ function renderComparativa(){
     </div>
   </div>
   ${(oA.proj===null||oB.proj===null)?`<div style="padding:7px 14px;background:rgba(230,126,34,0.06);border-top:0.5px solid rgba(230,126,34,0.25)"><span style="font-family:var(--mono);font-size:8px;color:var(--yellow)">⚠ Proyección parcial — registra más lecturas para mejorar el estimado</span></div>`:''}
+  <div style="padding:10px 14px;border-top:0.5px solid var(--border)">
+    <button onclick="showOrderModal()" style="width:100%;background:rgba(39,174,96,0.12);border:1px solid var(--green);color:var(--green);border-radius:10px;padding:10px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px">📧 Generar y Enviar Orden</button>
+  </div>
   `;
   innerScroll.appendChild(orderSec);
 
@@ -2443,6 +2487,80 @@ document.getElementById('inp-user').addEventListener('keydown',e=>{if(e.key==='E
 
 // Close modal on overlay click
 document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+
+// ── ORDER EMAIL ──
+function showOrderModal(){
+  const modal=document.getElementById('order-modal');
+  if(!modal) return;
+  // Order date = today
+  const today=new Date();
+  document.getElementById('ord-date-display').textContent=today.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  // Auto-suggest delivery date (Wed→Fri=+2, Fri→Tue=+4, else next Fri)
+  const dow=today.getDay();
+  const addDays=dow===3?2:dow===5?4:((5-dow+7)%7)||7;
+  const deliv=new Date(today); deliv.setDate(today.getDate()+addDays);
+  document.getElementById('ord-delivery-date').value=deliv.toISOString().slice(0,10);
+  // Build bin rows
+  const body=document.getElementById('ord-bins-body');
+  body.innerHTML='';
+  const sorted=[...allBins].sort((a,b)=>a.id-b.id);
+  sorted.forEach((bin,i)=>{
+    const isLac=bin.group==='Lactación';
+    const label=isLac?'Lactation (4022252)':'Gestation (4022222)';
+    const space=Math.max(0,bin.cap*(1-bin.level/100));
+    const suggested=Math.round(space*10)/10;
+    const row=document.createElement('div');
+    row.style.cssText=`display:grid;grid-template-columns:2fr 60px 44px 44px;align-items:center;padding:5px 10px;${i<sorted.length-1?'border-bottom:0.5px solid var(--border)':''}`;
+    row.innerHTML=`
+      <div style="font-family:var(--mono);font-size:8px;color:${isLac?'var(--blue)':'var(--muted2)'};">${label}</div>
+      <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);text-align:center">${bin.id}</div>
+      <input type="number" id="ord-t-${bin.id}" value="${suggested}" min="0" max="${bin.cap}" step="0.5"
+        style="font-family:var(--mono);font-size:10px;color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:3px 4px;text-align:center;width:100%;box-sizing:border-box">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center">${bin.level}%</div>`;
+    body.appendChild(row);
+  });
+  modal.classList.add('show');
+}
+function closeOrderModal(){
+  document.getElementById('order-modal')?.classList.remove('show');
+}
+function sendOrderByEmail(){
+  const orderDate=document.getElementById('ord-date-display')?.textContent||new Date().toLocaleDateString('en-US');
+  const delivDate=document.getElementById('ord-delivery-date')?.value||'';
+  const comments=document.getElementById('ord-comments')?.value||'';
+  const sorted=[...allBins].sort((a,b)=>a.id-b.id);
+  const W=60,col=(s,w)=>String(s).padEnd(w);
+  let body='ORDEN DE ALIMENTO - COLFAX\n';
+  body+='='.repeat(W)+'\n';
+  body+=`Contact:        Colfax\n`;
+  body+=`Order Date:     ${orderDate}\n`;
+  body+=`Delivery Date:  ${delivDate}\n\n`;
+  body+=`AMVC NUTRITIONAL\n1885 HWY 71\nAudubon, IA 50025\nTel: 712-563-2683 | Fax: 712-563-4398\n`;
+  body+='-'.repeat(W)+'\n';
+  body+=col('FEED',24)+col('DIET',10)+col('TONS',7)+col('BIN',5)+'NOTES\n';
+  body+='-'.repeat(W)+'\n';
+  let totalTons=0;
+  sorted.forEach(bin=>{
+    const tons=parseFloat(document.getElementById('ord-t-'+bin.id)?.value||0);
+    if(tons<=0) return;
+    totalTons+=tons;
+    const isLac=bin.group==='Lactación';
+    body+=col(isLac?'AMVC Colfax Lactation':'AMVC Colfax Gestation',24);
+    body+=col(isLac?'4022252':'4022222',10);
+    body+=col(tons.toFixed(1),7);
+    body+=col(bin.id,5);
+    body+=(isLac?'Pulmotil':'')+'\n';
+  });
+  body+='-'.repeat(W)+'\n';
+  body+=`TOTAL: ${totalTons.toFixed(1)} tons\n`;
+  if(comments){body+='\nCOMMENTS:\n'+comments+'\n';}
+  body+='\n'+'-'.repeat(W)+'\n';
+  body+=`Generado por FeedBins App · ${new Date().toLocaleString()}\n`;
+  const subj=encodeURIComponent('Feed Order - Colfax - Delivery '+delivDate);
+  const href='mailto:ocaraveo@amvcms.com?subject='+subj+'&body='+encodeURIComponent(body);
+  window.location.href=href;
+  closeOrderModal();
+}
 
 // ── SERVICE WORKER + UPDATE DETECTION ──
 if('serviceWorker' in navigator){
