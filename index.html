@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FeedBins">
 <link rel="manifest" href="manifest.json">
-<title>FeedBins</title>
+<title>FeedBins · Colfax</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -305,12 +305,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .v-slider-col{display:flex;flex-direction:column;align-items:center;gap:4px;width:48px;flex-shrink:0}
 .v-slider-lbl{font-family:var(--mono);font-size:8px;color:var(--muted)}
 .v-slider-wrap{flex:1;display:flex;align-items:center;justify-content:center}
-input.vslider{-webkit-appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;width:32px;height:160px;border:none;outline:none;cursor:pointer;background:transparent}
+input.vslider{-webkit-appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;width:32px;height:125px;border:none;outline:none;cursor:pointer;background:transparent}
 input.vslider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.15)}
 input.vslider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;cursor:pointer;border:none}
 input.vslider:disabled{opacity:0.4;cursor:not-allowed}
 .exp-svg-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.exp-svg{width:140px;height:196px;position:relative;flex-shrink:0;margin:0 auto}
+.exp-svg{width:110px;height:154px;position:relative;flex-shrink:0;margin:0 auto}
 .exp-svg svg{width:100%;height:100%}
 .exp-pct-lbl{position:absolute;top:43%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:16px;font-weight:600;color:#fff;pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,0.9)}
 .exp-pct-big{font-family:var(--mono);font-size:14px;font-weight:600;text-align:center}
@@ -420,13 +420,13 @@ select.modal-input{cursor:pointer}
 .toast.error-toast{background:var(--red);color:#fff}
 
 /* ══ FULLSCREEN BIN DETAIL ══ */
-#fs-bin-overlay{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100dvh;background:var(--bg);z-index:200;display:none;flex-direction:column;max-width:500px;margin:0 auto}
+#fs-bin-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;max-width:500px;margin:0 auto}
 #fs-bin-overlay.show{display:flex}
 .fs-bin-topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:max(env(safe-area-inset-top),10px) 12px 9px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .fs-back-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:10px;padding:6px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .fs-back-btn:active{opacity:0.7}
 .fs-bin-title{font-family:var(--sans);font-size:14px;font-weight:800;flex:1}
-.fs-bin-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;padding:12px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),16px)}
+.fs-bin-scroll{flex:1;overflow-y:auto;padding:12px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:max(env(safe-area-inset-bottom),16px)}
 .fs-bin-scroll::-webkit-scrollbar{display:none}
 </style>
 </head>
@@ -471,7 +471,7 @@ select.modal-input{cursor:pointer}
     <button class="ls-btn-primary" onclick="showLoginForm()">Ingresar</button>
     <button class="ls-btn-ghost" onclick="showLoginForm()">Ya tengo una cuenta</button>
     <button class="ls-btn-demo" id="ls-demo-btn" onclick="enterDemoMode()">✦ Ver Demo</button>
-    <div class="ls-tagline">Sistema de Bodegas</div>
+    <div class="ls-tagline">Granja Colfax · Sistema de Bodegas</div>
   </div>
 
   <!-- State 2: Login form -->
@@ -482,7 +482,7 @@ select.modal-input{cursor:pointer}
       </svg>
     </button>
     <div class="ls-form-title">Iniciar sesión</div>
-    <div class="ls-form-sub">Ingresa con tus credenciales.</div>
+    <div class="ls-form-sub">Ingresa con tus credenciales de Colfax.</div>
     <div class="ls-field">
       <div class="ls-lbl">Usuario</div>
       <input class="ls-input" id="inp-user" type="text" autocomplete="username"
@@ -662,8 +662,8 @@ const LANG = {
   es: {
     langBtn:'EN', realtime:'Feed monitoring · live', headline:'Ten el control total<br>de tus <span>tambos.</span>',
     welcomeBody:'Rastrea niveles, consumo y reabastecimiento en toda tu operación — en tiempo real, desde cualquier dispositivo.',
-    enter:'Ingresar', enterGhost:'Ya tengo una cuenta', tagline:'Sistema de Bodegas', loginTitle:'Iniciar sesión',
-    loginSub:'Ingresa con tus credenciales.', user:'Usuario', password:'Contraseña',
+    enter:'Ingresar', enterGhost:'Ya tengo una cuenta', tagline:'Granja Colfax · Sistema de Bodegas', loginTitle:'Iniciar sesión',
+    loginSub:'Ingresa con tus credenciales de Colfax.', user:'Usuario', password:'Contraseña',
     userPlaceholder:'usuario', loginError:'Usuario o contraseña incorrectos', loginAction:'Entrar',
     version:'FeedBins v4.0 · Sesión de 8 horas', loading:'Cargando...', verifying:'Verificando...',
     missingLogin:'Ingresa usuario y contraseña', binsTab:'📊 BODEGAS', readingsTab:'📋 LECTURAS',
@@ -723,8 +723,8 @@ const LANG = {
   en: {
     langBtn:'ES', realtime:'Feed monitoring · live', headline:'Know what\'s in<br>every <span>bin.</span>',
     welcomeBody:'Track feed levels, usage and reorders across your whole operation — in real time, from anywhere.',
-    enter:'Sign in', enterGhost:'I already have an account', tagline:'Feed Bin System', loginTitle:'Sign in',
-    loginSub:'Use your credentials.', user:'User', password:'Password', userPlaceholder:'user',
+    enter:'Sign in', enterGhost:'I already have an account', tagline:'Colfax Farm · Feed Bin System', loginTitle:'Sign in',
+    loginSub:'Use your Colfax credentials.', user:'User', password:'Password', userPlaceholder:'user',
     loginError:'Incorrect user or password', loginAction:'Log in', version:'FeedBins v4.0 · 8-hour session',
     loading:'Loading...', verifying:'Checking...', missingLogin:'Enter user and password',
     binsTab:'📊 BINS', readingsTab:'📋 READINGS', orderTab:'🛒 ORDER', compareTab:'📈 COMPARISON',
@@ -1311,7 +1311,7 @@ function onSlide(binId,val){
   bin.level=parseInt(val);
   const color=col(bin.level);
   const esvg=document.getElementById('esvg-'+binId);
-  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,140,196,bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
+  if(esvg) esvg.innerHTML=makeSVG(bin.level,color,110,154,bin.cap)+`<div class="exp-pct-lbl">${bin.level}%</div>`;
   const ep=document.getElementById('epb-'+binId);if(ep){ep.textContent=bin.level+'%';ep.className='exp-pct-big '+valCls(bin.level)}
   const inv=(bin.cap*bin.level/100).toFixed(2);
   const et=document.getElementById('eton-'+binId);if(et) et.textContent=inv+' ton de '+bin.cap;
@@ -1454,7 +1454,7 @@ function buildExpandHTML(bin){
       </div>
       <div class="exp-svg-wrap">
         <div class="exp-svg" id="esvg-${bin.id}">
-          ${makeSVG(bin.level,color,140,196,bin.cap)}
+          ${makeSVG(bin.level,color,110,154,bin.cap)}
           <div class="exp-pct-lbl">${bin.level}%</div>
         </div>
         <div class="exp-pct-big ${valCls(bin.level)}" id="epb-${bin.id}">${bin.level}%</div>
@@ -2015,20 +2015,98 @@ function renderComparativa(){
     const animals=animalCounts[group]||0;
     const daily=fmtConsumption(rate);
     const pa=fmtPerAnimal(rate,animals);
+    const grpInv=allBins.filter(b=>b.group===group).reduce((s,b)=>s+(b.cap*b.level/100),0);
+    const daysLeft=(rate!==null&&rate>0)?(grpInv/rate):null;
+    const weekly=rate!==null?fmtConsumption(rate*7):null;
+    const dayCol=daysLeft===null?'var(--muted)':daysLeft<3?'var(--red)':daysLeft<7?'var(--yellow)':'var(--green)';
     const row=document.createElement('div');
-    row.style.cssText=`padding:10px 14px;display:flex;justify-content:space-between;align-items:center;${gi<groups.length-1?'border-bottom:0.5px solid var(--border)':''}`;
+    row.style.cssText=`padding:11px 14px;${gi<groups.length-1?'border-bottom:0.5px solid var(--border)':''}`;
     row.innerHTML=`
-      <div>
-        <div style="font-family:var(--sans);font-size:11px;font-weight:600;color:var(--text)">${groupLabel(group)}</div>
-        <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${animals>0?animals+' '+t('animales'):t('noAnimals')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-family:var(--sans);font-size:11px;font-weight:600;color:var(--text)">${groupLabel(group)}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${animals>0?animals+' '+t('animales'):t('noAnimals')}</div>
+        </div>
+        ${daysLeft!==null?`<span style="font-family:var(--mono);font-size:9px;font-weight:700;padding:3px 9px;border-radius:10px;background:${daysLeft<3?'rgba(192,57,43,0.12)':daysLeft<7?'rgba(230,126,34,0.12)':'rgba(39,174,96,0.1)'};border:0.5px solid ${daysLeft<3?'rgba(192,57,43,0.4)':daysLeft<7?'rgba(230,126,34,0.4)':'rgba(39,174,96,0.3)'};color:${dayCol}">~${Math.floor(daysLeft)}d</span>`:''}
       </div>
-      <div style="text-align:right">
-        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:${rate!==null?'var(--blue)':'var(--muted)'}">${daily||t('consumoNA')}</div>
-        ${animals>0&&pa?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:1px">${pa} ${t('perAnimal').toLowerCase()}</div>`:''}
+      <div style="display:grid;grid-template-columns:repeat(${animals>0&&pa?4:3},1fr);gap:5px 8px">
+        <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">DIARIO</div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${rate!==null?'var(--blue)':'var(--muted)'}">${daily||'—'}</div></div>
+        <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">SEMANAL</div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${weekly?'var(--blue)':'var(--muted)'}">${weekly||'—'}</div></div>
+        <div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">DÍAS REST.</div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${dayCol}">${daysLeft!==null?Math.floor(daysLeft)+'d':'—'}</div></div>
+        ${animals>0&&pa?`<div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">/ANIMAL</div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted2)">${pa}</div></div>`:''}
       </div>`;
     consSection.appendChild(row);
   });
   innerScroll.appendChild(consSection);
+
+  // ── Pedido Estimado de Camiones ──
+  const dow2=new Date().getDay();
+  if(window._fbLeadDays===undefined){window._fbLeadDays=(dow2===3)?2:(dow2===5)?4:2;}
+  const leadD=window._fbLeadDays;
+  const calcFOrder=(grps,days)=>{
+    const fbins=allBins.filter(b=>grps.includes(b.group));
+    const space=fbins.reduce((s,b)=>s+Math.max(0,b.cap*(1-b.level/100)),0);
+    let proj=0,hasC=false;
+    grps.forEach(g=>{const r=calcGroupConsumption(g);if(r!==null){proj+=r*days;hasC=true;}});
+    const total=space+(hasC?proj:0);
+    const comps=Math.max(1,Math.ceil(total/3));
+    return{space,proj:hasC?proj:null,total,comps};
+  };
+  const oA=calcFOrder(['Gestación','Breeding'],leadD);
+  const oB=calcFOrder(['Lactación'],leadD);
+  const totComps=oA.comps+oB.comps;
+  const totTrucks=Math.max(1,Math.ceil(totComps/8));
+  const abtn=(on)=>`font-family:var(--mono);font-size:9px;border-radius:5px;padding:4px 10px;cursor:pointer;border:1px solid ${on?'var(--green)':'var(--border)'};background:${on?'rgba(39,174,96,0.15)':'transparent'};color:${on?'var(--green)':'var(--muted)'}`;
+  const fr=(lbl,val,c='var(--text)')=>`<div><div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.3px">${lbl}</div><div style="font-family:var(--mono);font-size:12px;font-weight:600;color:${c}">${val}</div></div>`;
+  const orderSec=document.createElement('div');
+  orderSec.style.cssText='margin-top:10px;border:1px solid var(--border);border-radius:10px;overflow:hidden';
+  orderSec.innerHTML=`
+  <div style="background:var(--s2);padding:9px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);letter-spacing:.5px">🚛 PEDIDO ESTIMADO</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--muted)">3 t/compartimento · 8 compart/camión · mín 1 camión</div>
+    </div>
+    <div style="display:flex;gap:5px">
+      <button onclick="window._fbLeadDays=2;renderComparativa()" style="${abtn(leadD===2)}">Mié→Vie</button>
+      <button onclick="window._fbLeadDays=4;renderComparativa()" style="${abtn(leadD===4)}">Vie→Mar</button>
+    </div>
+  </div>
+  <div style="padding:12px 14px;border-bottom:0.5px solid var(--border)">
+    <div style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--muted2);letter-spacing:.8px;margin-bottom:8px">GESTACIÓN / BREEDING</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px 8px">
+      ${fr('ESPACIO LIBRE',oA.space.toFixed(1)+' t','var(--yellow)')}
+      ${fr('PROY. '+leadD+'d',oA.proj!==null?'+'+oA.proj.toFixed(1)+' t':'SIN DATOS','var(--muted2)')}
+      ${fr('TOTAL A PEDIR',oA.total.toFixed(1)+' t','var(--text)')}
+      ${fr('COMPART.',String(oA.comps),'var(--blue)')}
+    </div>
+  </div>
+  <div style="padding:12px 14px;border-bottom:0.5px solid var(--border)">
+    <div style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--muted2);letter-spacing:.8px;margin-bottom:8px">FARRO (LACTACIÓN)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px 8px">
+      ${fr('ESPACIO LIBRE',oB.space.toFixed(1)+' t','var(--yellow)')}
+      ${fr('PROY. '+leadD+'d',oB.proj!==null?'+'+oB.proj.toFixed(1)+' t':'SIN DATOS','var(--muted2)')}
+      ${fr('TOTAL A PEDIR',oB.total.toFixed(1)+' t','var(--text)')}
+      ${fr('COMPART.',String(oB.comps),'var(--blue)')}
+    </div>
+  </div>
+  <div style="background:var(--green-dim);border-top:1px solid var(--green);padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--green);font-weight:700;letter-spacing:.5px">TOTAL PEDIDO</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:3px">${(oA.total+oB.total).toFixed(1)} t · ${totComps} compartimentos</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:1px">${oA.comps} Gest/Breed · ${oB.comps} Farro</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:var(--mono);font-size:36px;font-weight:700;color:var(--green);line-height:1">${totTrucks}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">camión${totTrucks!==1?'es':''}</div>
+    </div>
+  </div>
+  ${(oA.proj===null||oB.proj===null)?`<div style="padding:7px 14px;background:rgba(230,126,34,0.06);border-top:0.5px solid rgba(230,126,34,0.25)"><span style="font-family:var(--mono);font-size:8px;color:var(--yellow)">⚠ Proyección parcial — registra más lecturas para mejorar el estimado</span></div>`:''}
+  `;
+  innerScroll.appendChild(orderSec);
 
   scroll.appendChild(innerScroll);
 }
@@ -2368,36 +2446,34 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 
 // ── SERVICE WORKER + UPDATE DETECTION ──
 if('serviceWorker' in navigator){
-  window._swWaiting=null;
-  window._updateListo=false;
   navigator.serviceWorker.register('sw.js').then(reg=>{
-    if(reg.waiting && navigator.serviceWorker.controller){ _mostrarUpdate(reg.waiting); }
+    // Already waiting? (user had page open when update arrived and already installed)
+    if(reg.waiting && navigator.serviceWorker.controller){
+      _showUpdateBanner();
+    }
+    // New SW detected while page is open
     reg.addEventListener('updatefound',()=>{
       const nw=reg.installing;
-      if(!nw) return;
       nw.addEventListener('statechange',()=>{
-        if(nw.state==='installed' && navigator.serviceWorker.controller){ _mostrarUpdate(nw); }
+        if(nw.state==='installed' && navigator.serviceWorker.controller){
+          _showUpdateBanner();
+        }
       });
     });
-    document.addEventListener('visibilitychange',()=>{
-      if(document.visibilityState==='visible') reg.update().catch(()=>{});
-    });
-    reg.update().catch(()=>{});
   }).catch(()=>{});
+  // New SW took control (auto-skipWaiting or after SKIP_WAITING message)
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(window._updateListo){ window._updateListo=false; window.location.reload(); }
+    _showUpdateBanner();
   });
 }
-function _mostrarUpdate(worker){
-  window._swWaiting=worker;
+function _showUpdateBanner(){
   const el=document.getElementById('update-banner');
   if(el) el.style.display='flex';
 }
 function aplicarActualizacion(){
   const btn=document.getElementById('update-btn');
-  if(btn){btn.textContent='Actualizando...';btn.disabled=true;}
-  if(window._swWaiting){ window._updateListo=true; window._swWaiting.postMessage('SKIP_WAITING'); }
-  else { window.location.reload(); }
+  if(btn){btn.textContent='Recargando...';btn.disabled=true;}
+  window.location.reload(true);
 }
 
 // ── INIT ──
