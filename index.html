@@ -1466,8 +1466,11 @@ function buildCardHTML(bin){
     <div class="bin-mid">
       <div class="bin-name">${bin.name}<span class="barn-tag">${bin.barn}</span></div>
       <div class="bin-diet">${bin.diet}</div>
-      <div class="bin-ts">${bin.ts?'⏱ '+fmtTs(bin.ts):t('noReadings')}</div>
-      ${bin.savedBy?`<div class="bin-who">${t('by')} ${bin.savedBy}</div>`:''}
+      <div class="bin-ts" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+        <span style="color:${bin.isOpen?'var(--green)':'var(--muted)'};font-size:8px;font-weight:700">${bin.isOpen?'● '+(lang==='es'?'Abierto':'Open'):'○ '+(lang==='es'?'Cerrado':'Closed')}</span>
+        ${bin.ts?`<span style="color:var(--muted2)">·</span><span>⏱ ${fmtTs(bin.ts)}</span>`:''}
+        ${bin.savedBy?`<span style="color:var(--muted2)">·</span><span>${bin.savedBy}</span>`:''}
+      </div>
       ${bin.notes?`<div class="badges"><span class="nbadge">${bin.notes}</span></div>`:''}
     </div>
     <div class="bin-right">
@@ -2059,7 +2062,9 @@ function renderComparativa(){
     const grpInv=allBins.filter(b=>b.group===group).reduce((s,b)=>s+(b.cap*b.level/100),0);
     const daysLeft=(rate!==null&&rate>0)?(grpInv/rate):null;
     const weekly=rate!==null?fmtConsumption(rate*7):null;
-    const dayCol=daysLeft===null?'var(--muted)':daysLeft<3?'var(--red)':daysLeft<7?'var(--yellow)':'var(--green)';
+    // Alerta basada en lead time actual (días hasta próxima entrega)
+    const alertLead=window._fbLeadDays||2;
+    const dayCol=daysLeft===null?'var(--muted)':daysLeft<alertLead?'var(--red)':daysLeft<alertLead+3?'var(--yellow)':'var(--green)';
     const row=document.createElement('div');
     row.style.cssText=`padding:11px 14px;${gi<groups.length-1?'border-bottom:0.5px solid var(--border)':''}`;
     row.innerHTML=`
@@ -2090,12 +2095,25 @@ function renderComparativa(){
   const leadD=window._fbLeadDays;
   const calcFOrder=(grps,days)=>{
     const fbins=allBins.filter(b=>grps.includes(b.group));
-    const space=fbins.reduce((s,b)=>s+Math.max(0,b.cap*(1-b.level/100)),0);
-    let proj=0,hasC=false;
-    grps.forEach(g=>{const r=calcGroupConsumption(g);if(r!==null){proj+=r*days;hasC=true;}});
-    const total=space+(hasC?proj:0);
-    const comps=Math.max(1,Math.ceil(total/3));
-    return{space,proj:hasC?proj:null,total,comps};
+    const totalCap=fbins.reduce((s,b)=>s+b.cap,0);
+    // Consumo proyectado del grupo (días hasta entrega + 1 día stock seguridad)
+    let grpRate=0,hasC=false;
+    grps.forEach(g=>{const r=calcGroupConsumption(g);if(r!==null){grpRate+=r;hasC=true;}});
+    const safetyDays=1; // 1 día extra de buffer
+    const projDays=days+safetyDays;
+    const grpProj=hasC?grpRate*projDays:0;
+    // Compartimentos por bin (floor) — más preciso que ceil del total agregado
+    let comps=0,totalSpace=0;
+    fbins.forEach(bin=>{
+      const binSpace=Math.max(0,bin.cap*(1-bin.level/100));
+      const binProj=hasC&&totalCap>0?grpProj*(bin.cap/totalCap):0;
+      comps+=Math.floor((binSpace+binProj)/3);
+      totalSpace+=binSpace;
+    });
+    // Si sobra fracción significativa entre todos los bins, agregar 1 compartimento
+    const total=totalSpace+(hasC?grpProj:0);
+    if(total-(comps*3)>0.3) comps++;
+    return{space:totalSpace,proj:hasC?grpProj:null,total,comps:Math.max(1,comps),rate:hasC?grpRate:null};
   };
   const oA=calcFOrder(['Gestación','Breeding'],leadD);
   const oB=calcFOrder(['Lactación'],leadD);
