@@ -409,7 +409,7 @@ select.modal-input{cursor:pointer}
 .modal-error.show{display:block}
 
 /* Session bar */
-.session-bar{background:var(--s1);border-top:1px solid var(--border);padding:5px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;font-family:var(--mono);font-size:9px;color:var(--muted)}
+.session-bar{background:var(--s1);border-top:1px solid var(--border);padding:6px 14px;padding-bottom:max(env(safe-area-inset-bottom),8px);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;font-family:var(--mono);font-size:9px;color:var(--muted)}
 .session-bar span{color:var(--muted2)}
 .session-bar.warn{background:rgba(192,57,43,0.08);border-top-color:rgba(192,57,43,0.3)}
 .session-bar.warn span{color:var(--red)}
@@ -1146,11 +1146,19 @@ function onLoginSuccess(){
   applyLang();
 }
 
-// Session countdown
+// Session bar — avatar + username + logout
 function updateSessionBar(){
   if(!currentUser) return;
-  const el = document.getElementById('session-countdown');
-  if(el) el.textContent = currentUser.username;
+  const sb = document.getElementById('session-bar');
+  if(!sb) return;
+  sb.innerHTML=`
+    <div style="display:flex;align-items:center;gap:7px">
+      <div style="width:22px;height:22px;border-radius:50%;background:${currentUser.color};display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:#fff;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.15)">${initials(currentUser.name)}</div>
+      <span style="color:var(--muted2);font-family:var(--mono);font-size:9px">${currentUser.name.split(' ')[0]}</span>
+      <span style="color:var(--muted);font-size:8px">· ${roleLabel(currentUser.role)}</span>
+    </div>
+    <span onclick="doLogout()" style="cursor:pointer;color:var(--red);font-family:var(--mono);font-size:9px">${t('logout')}</span>
+  `;
 }
 
 // ════════════════════════════════════════════
@@ -1757,23 +1765,29 @@ function exportResumenCSV(){
 // ── LECTURAS TABLE ──
 function renderLecturas(){
   const wrap=document.getElementById('lecturas-wrap');
-  if(!history.length){wrap.innerHTML=`<div class="tbl-empty">${t('noSavedReadings')}</div>`;return}
-  let html=`<table><thead><tr><th>Bin</th><th>Fecha/Hora</th><th>Niv.</th><th>Δ</th><th>Ton</th><th>${lang==='es'?'Estado':'Status'}</th><th>${t('user')}</th></tr></thead><tbody>`;
-  history.forEach(h=>{
-    const color=col(h.level);
-    const delta=h.level-(h.prevLevel||h.level);
-    const deltaStr=delta>0?`+${delta}%`:delta<0?`${delta}%`:'—';
-    const deltaCol=delta>0?'var(--green)':delta<0?'var(--red)':'var(--muted)';
-    const inv=(h.cap*h.level/100).toFixed(1);
-    html+=`<tr>
-      <td><div class="td-bin"><span class="td-dot" style="background:${color}"></span>${h.binName}</div>
-          <div class="td-muted">${h.barn}</div></td>
-      <td class="td-muted" style="white-space:nowrap">${fmtTs(h.ts)}</td>
-      <td style="color:${color};font-weight:600">${h.level}%</td>
+  if(!wrap) return;
+  // Última lectura por bin (history está en orden newest-first por unshift)
+  const lastByBin=new Map();
+  history.forEach(h=>{ if(h.binId!=null && !lastByBin.has(h.binId)) lastByBin.set(h.binId,h); });
+  // Mostrar los 22 bins en orden numérico con su última lectura
+  const sorted=[...allBins].sort((a,b)=>a.id-b.id);
+  let html=`<table><thead><tr><th>Bin</th><th>${lang==='es'?'Última lectura':'Last reading'}</th><th>Niv.</th><th>Δ</th><th>Ton</th><th>${lang==='es'?'Estado':'Status'}</th><th>${t('user')}</th></tr></thead><tbody>`;
+  sorted.forEach(bin=>{
+    const h=lastByBin.get(bin.id);
+    const color=h?col(h.level):'var(--border)';
+    const delta=h?h.level-(h.prevLevel||h.level):null;
+    const deltaStr=delta===null?'—':delta>0?`+${delta}%`:delta<0?`${delta}%`:'—';
+    const deltaCol=delta===null?'var(--muted)':delta>0?'var(--green)':delta<0?'var(--red)':'var(--muted)';
+    const inv=h?(h.cap*h.level/100).toFixed(1):'—';
+    html+=`<tr style="${!h?'opacity:0.45':''}">
+      <td><div class="td-bin"><span class="td-dot" style="background:${color}"></span>${bin.name}</div>
+          <div class="td-muted">${bin.barn}</div></td>
+      <td class="td-muted" style="white-space:nowrap">${h?fmtTs(h.ts):'Sin lecturas'}</td>
+      <td style="color:${color};font-weight:600">${h?h.level+'%':'—'}</td>
       <td style="color:${deltaCol};font-weight:600">${deltaStr}</td>
-      <td class="td-muted">${inv}t</td>
-      <td>${h.isOpen!==false?`<span class="td-status-open">● ${t('openPlain')}</span>`:`<span class="td-status-closed">● ${t('closedPlain')}</span>`}</td>
-      <td class="td-muted" style="white-space:nowrap">${h.savedBy||'—'}</td>
+      <td class="td-muted">${inv}${h?'t':''}</td>
+      <td>${h?(h.isOpen!==false?`<span class="td-status-open">● ${t('openPlain')}</span>`:`<span class="td-status-closed">● ${t('closedPlain')}</span>`):'—'}</td>
+      <td class="td-muted" style="white-space:nowrap">${h?h.savedBy||'—':'—'}</td>
     </tr>`;
   });
   html+='</tbody></table>';
