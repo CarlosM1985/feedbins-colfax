@@ -1040,6 +1040,11 @@ function initFirestoreSync(){
       if(idx>=0){
         allBins[idx]={...allBins[idx],...data};
         changed=true;
+      } else {
+        // Bin nuevo en Firestore que no teníamos localmente
+        allBins.push(data);
+        allBins.sort((a,b)=>a.id-b.id);
+        changed=true;
       }
     });
     if(changed){
@@ -1060,7 +1065,7 @@ function initFirestoreSync(){
   // Load bins from Firestore on first login
   db.collection('bins').get().then(snapshot=>{
     if(snapshot.empty){
-      // First time — upload default bins to Firestore
+      // First time — upload all default bins to Firestore
       allBins.forEach(bin=>{
         db.collection('bins').doc('bin-'+bin.id).set(bin).catch(e=>console.warn(e));
       });
@@ -1069,6 +1074,18 @@ function initFirestoreSync(){
       snapshot.forEach(doc=>fsBins.push(doc.data()));
       fsBins.sort((a,b)=>a.id-b.id);
       allBins=fsBins;
+      // Sincronizar bins faltantes: si defaultBins tiene bins que no están en Firestore, agregarlos
+      const existingIds=new Set(fsBins.map(b=>b.id));
+      let added=false;
+      defaultBins.forEach(def=>{
+        if(!existingIds.has(def.id)){
+          const newBin={...def,level:0,ts:null,savedBy:null,prevSavedLevel:null,prevSavedTs:null};
+          allBins.push(newBin);
+          db.collection('bins').doc('bin-'+def.id).set(newBin).catch(e=>console.warn(e));
+          added=true;
+        }
+      });
+      if(added) allBins.sort((a,b)=>a.id-b.id);
       try{localStorage.setItem('fb-v4-bins',JSON.stringify(allBins));}catch(e){}
       if(currentUser){renderBins();renderFilters();updateSummary(getVisible());}
     }
